@@ -30,7 +30,7 @@ jobs:
     
     - name: Run Safety check
       run: |
-        safety check --json --continue-on-error
+        safety check --json
       continue-on-error: true
     
     - name: Install project dependencies
