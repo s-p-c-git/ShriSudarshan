@@ -347,10 +347,34 @@ class TradingWorkflow:
         """
         print(f"[Risk Assessment Phase] Assessing risk for {state['symbol']}")
         
-        # TODO: Implement risk assessment
-        # For now, approve by default
-        state["risk_approved"] = True
-        state["current_phase"] = "risk_assessment"
+        from ..agents.oversight import RiskManager
+        
+        risk_manager = RiskManager()
+        
+        context = {
+            "symbol": state["symbol"],
+            "strategy_proposal": state.get("strategy_proposal"),
+            "execution_plan": state.get("execution_plan"),
+            "portfolio_state": {},  # Would come from portfolio tracking system
+        }
+        
+        try:
+            risk_assessment = await risk_manager.assess_risk(context)
+            
+            state["risk_assessment"] = risk_assessment
+            state["risk_approved"] = risk_assessment.approved
+            state["current_phase"] = "risk_assessment"
+            
+            print(f"  {'✓' if risk_assessment.approved else '✗'} Risk Assessment: {risk_assessment.recommendation}")
+            if risk_assessment.risk_warnings:
+                for warning in risk_assessment.risk_warnings[:3]:
+                    print(f"    ⚠ {warning}")
+            
+        except Exception as e:
+            print(f"  ✗ Risk assessment failed: {e}")
+            state["errors"].append(f"Risk assessment error: {str(e)}")
+            state["risk_approved"] = False
+            state["current_phase"] = "risk_assessment"
         
         return state
     
@@ -360,21 +384,56 @@ class TradingWorkflow:
         """
         print(f"[Portfolio Decision Phase] Making decision for {state['symbol']}")
         
-        # TODO: Implement portfolio decision logic
-        # For now, approve by default
-        state["final_approval"] = True
-        state["current_phase"] = "portfolio_decision"
+        from ..agents.oversight import PortfolioManager
+        
+        portfolio_manager = PortfolioManager()
+        
+        context = {
+            "symbol": state["symbol"],
+            "strategy_proposal": state.get("strategy_proposal"),
+            "risk_assessment": state.get("risk_assessment"),
+            "execution_plan": state.get("execution_plan"),
+        }
+        
+        try:
+            portfolio_decision = await portfolio_manager.make_decision(context)
+            
+            state["portfolio_decision"] = portfolio_decision
+            state["final_approval"] = portfolio_decision.approved
+            state["current_phase"] = "portfolio_decision"
+            
+            print(f"  {'✓' if portfolio_decision.approved else '✗'} Portfolio Manager Decision: {'APPROVED' if portfolio_decision.approved else 'REJECTED'}")
+            print(f"    {portfolio_decision.decision_rationale[:100]}...")
+            
+        except Exception as e:
+            print(f"  ✗ Portfolio decision failed: {e}")
+            state["errors"].append(f"Portfolio decision error: {str(e)}")
+            state["final_approval"] = False
+            state["current_phase"] = "portfolio_decision"
         
         return state
     
     async def _execution_phase(self, state: TradingSystemState) -> TradingSystemState:
         """
-        Traders execute the approved strategy.
+        Traders execute the approved strategy (PAPER TRADING MODE).
         """
         print(f"[Execution Phase] Executing strategy for {state['symbol']}")
         
-        # TODO: Implement order execution
-        state["execution_complete"] = True
+        # In paper trading mode, we simulate execution
+        execution_plan = state.get("execution_plan")
+        
+        if execution_plan and execution_plan.orders:
+            print(f"  PAPER TRADING MODE - Simulating {len(execution_plan.orders)} order(s)")
+            for i, order in enumerate(execution_plan.orders, 1):
+                print(f"    Order {i}: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}")
+            
+            state["orders_submitted"] = True
+            state["execution_complete"] = True
+        else:
+            print(f"  No orders to execute")
+            state["orders_submitted"] = False
+            state["execution_complete"] = True
+        
         state["current_phase"] = "execution"
         
         return state
@@ -385,7 +444,13 @@ class TradingWorkflow:
         """
         print(f"[Learning Phase] Logging trade for {state['symbol']}")
         
-        # TODO: Implement learning loop
+        # In this phase, we would normally:
+        # 1. Wait for trade to complete
+        # 2. Calculate actual P&L
+        # 3. Have reflective agent analyze outcome
+        # For now, just log that we completed the workflow
+        
+        print(f"  Trade logged for future analysis")
         state["current_phase"] = "learning"
         
         return state
