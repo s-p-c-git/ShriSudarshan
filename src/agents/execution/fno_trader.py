@@ -198,6 +198,29 @@ class FnOTrader(BaseAgent):
                 limit_price=current_price * 0.03,
             ))
         
+        elif strategy_type == StrategyType.CALENDAR_SPREAD:
+            # Buy far-dated option + Sell near-dated option (same strike)
+            contracts = max(1, int(position_value / (current_price * 100) / 2))
+            strike = current_price
+            
+            # Sell near-dated call (30 days out - simplified)
+            orders.append(Order(
+                symbol=f"{symbol}_CALL_{strike:.0f}_30D",
+                order_type=OrderType.LIMIT,
+                side=OrderSide.SELL,
+                quantity=contracts,
+                limit_price=current_price * 0.03,
+            ))
+            
+            # Buy far-dated call (60 days out - simplified)
+            orders.append(Order(
+                symbol=f"{symbol}_CALL_{strike:.0f}_60D",
+                order_type=OrderType.LIMIT,
+                side=OrderSide.BUY,
+                quantity=contracts,
+                limit_price=current_price * 0.05,
+            ))
+        
         return orders
     
     async def create_execution_plan(self, context: Dict[str, Any]) -> ExecutionPlan:

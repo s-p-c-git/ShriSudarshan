@@ -129,6 +129,7 @@ Choose from these strategy types:
 - IRON_CONDOR: Sell both spreads (neutral, range-bound)
 - STRADDLE: Buy call + put (expecting big move, uncertain direction)
 - STRANGLE: Buy OTM call + OTM put (expecting big move, cheaper than straddle)
+- CALENDAR_SPREAD: Buy far-dated + sell near-dated options (profit from time decay)
 
 Provide your strategy in JSON format:
 {{

@@ -302,6 +302,7 @@ class TradingWorkflow:
             StrategyType.IRON_CONDOR,
             StrategyType.STRADDLE,
             StrategyType.STRANGLE,
+            StrategyType.CALENDAR_SPREAD,
         ]
         
         if strategy_type in options_strategies:
