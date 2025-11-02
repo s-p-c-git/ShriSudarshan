@@ -29,12 +29,11 @@ class TradeRecord(Base):
     exit_date = Column(DateTime)
     entry_price = Column(Float, nullable=False)
     exit_price = Column(Float)
-    position_size = Column(Float, nullable=False)
-    pnl = Column(Float)
-    pnl_percentage = Column(Float)
-    rationale = Column(Text, nullable=False)
-    market_conditions = Column(JSON)
-    outcome_status = Column(String, nullable=False)
+    quantity = Column(Float, nullable=False)
+    realized_pnl = Column(Float)
+    return_pct = Column(Float)
+    outcome = Column(String, nullable=False, default="pending")
+    notes = Column(Text)
     created_at = Column(DateTime, default=datetime.now)
 
 
@@ -44,10 +43,12 @@ class ReflectionRecord(Base):
     
     reflection_id = Column(String, primary_key=True)
     trade_id = Column(String, nullable=False)
-    accuracy_assessment = Column(Text, nullable=False)
-    key_learnings = Column(JSON)
-    belief_adjustments = Column(JSON)
-    actionable_improvements = Column(JSON)
+    symbol = Column(String, nullable=False)
+    analysis_summary = Column(Text, nullable=False)
+    what_worked = Column(JSON)
+    what_failed = Column(JSON)
+    lessons_learned = Column(JSON)
+    strategic_recommendations = Column(JSON)
     created_at = Column(DateTime, default=datetime.now)
 
 
@@ -92,17 +93,16 @@ class EpisodicMemory:
             record = TradeRecord(
                 trade_id=trade.trade_id,
                 symbol=trade.symbol,
-                strategy_type=trade.strategy_type,
+                strategy_type=trade.strategy_type.value,
                 entry_date=trade.entry_date,
                 exit_date=trade.exit_date,
                 entry_price=trade.entry_price,
                 exit_price=trade.exit_price,
-                position_size=trade.position_size,
-                pnl=trade.pnl,
-                pnl_percentage=trade.pnl_percentage,
-                rationale=trade.rationale,
-                market_conditions=trade.market_conditions,
-                outcome_status=trade.outcome_status,
+                quantity=trade.quantity,
+                realized_pnl=trade.realized_pnl,
+                return_pct=trade.return_pct,
+                outcome=trade.outcome,
+                notes=trade.notes,
             )
             session.add(record)
             session.commit()
@@ -119,12 +119,14 @@ class EpisodicMemory:
         session = self._get_session()
         try:
             record = ReflectionRecord(
-                reflection_id=f"refl_{reflection.trade_id}_{datetime.now().timestamp()}",
+                reflection_id=f"refl_{reflection.trade_id}_{int(datetime.now().timestamp())}",
                 trade_id=reflection.trade_id,
-                accuracy_assessment=reflection.accuracy_assessment,
-                key_learnings=reflection.key_learnings,
-                belief_adjustments=reflection.belief_adjustments,
-                actionable_improvements=reflection.actionable_improvements,
+                symbol=reflection.symbol,
+                analysis_summary=reflection.analysis_summary,
+                what_worked=reflection.what_worked,
+                what_failed=reflection.what_failed,
+                lessons_learned=reflection.lessons_learned,
+                strategic_recommendations=reflection.strategic_recommendations,
             )
             session.add(record)
             session.commit()
@@ -147,20 +149,20 @@ class EpisodicMemory:
             if not record:
                 return None
             
+            from ..data.schemas import StrategyType
             return TradeOutcome(
                 trade_id=record.trade_id,
                 symbol=record.symbol,
-                strategy_type=record.strategy_type,
+                strategy_type=StrategyType(record.strategy_type),
                 entry_date=record.entry_date,
                 exit_date=record.exit_date,
                 entry_price=record.entry_price,
                 exit_price=record.exit_price,
-                position_size=record.position_size,
-                pnl=record.pnl,
-                pnl_percentage=record.pnl_percentage,
-                rationale=record.rationale,
-                market_conditions=record.market_conditions or {},
-                outcome_status=record.outcome_status,
+                quantity=record.quantity,
+                realized_pnl=record.realized_pnl,
+                return_pct=record.return_pct,
+                outcome=record.outcome,
+                notes=record.notes or "",
             )
         finally:
             session.close()
@@ -186,21 +188,21 @@ class EpisodicMemory:
                 .all()
             )
             
+            from ..data.schemas import StrategyType
             return [
                 TradeOutcome(
                     trade_id=record.trade_id,
                     symbol=record.symbol,
-                    strategy_type=record.strategy_type,
+                    strategy_type=StrategyType(record.strategy_type),
                     entry_date=record.entry_date,
                     exit_date=record.exit_date,
                     entry_price=record.entry_price,
                     exit_price=record.exit_price,
-                    position_size=record.position_size,
-                    pnl=record.pnl,
-                    pnl_percentage=record.pnl_percentage,
-                    rationale=record.rationale,
-                    market_conditions=record.market_conditions or {},
-                    outcome_status=record.outcome_status,
+                    quantity=record.quantity,
+                    realized_pnl=record.realized_pnl,
+                    return_pct=record.return_pct,
+                    outcome=record.outcome,
+                    notes=record.notes or "",
                 )
                 for record in records
             ]
@@ -226,19 +228,15 @@ class EpisodicMemory:
                 .all()
             )
             
-            # Get trade outcome
-            trade = self.get_trade(trade_id)
-            if not trade:
-                return []
-            
             return [
                 Reflection(
                     trade_id=record.trade_id,
-                    trade_outcome=trade,
-                    accuracy_assessment=record.accuracy_assessment,
-                    key_learnings=record.key_learnings or [],
-                    belief_adjustments=record.belief_adjustments or [],
-                    actionable_improvements=record.actionable_improvements or [],
+                    symbol=record.symbol,
+                    analysis_summary=record.analysis_summary,
+                    what_worked=record.what_worked or [],
+                    what_failed=record.what_failed or [],
+                    lessons_learned=record.lessons_learned or [],
+                    strategic_recommendations=record.strategic_recommendations or [],
                     timestamp=record.created_at,
                 )
                 for record in records
@@ -257,7 +255,7 @@ class EpisodicMemory:
         try:
             total_trades = session.query(TradeRecord).count()
             closed_trades = session.query(TradeRecord).filter(
-                TradeRecord.outcome_status.in_(["closed_profit", "closed_loss", "stopped_out"])
+                TradeRecord.outcome.in_(["win", "loss", "breakeven"])
             ).all()
             
             if not closed_trades:
@@ -269,8 +267,8 @@ class EpisodicMemory:
                     "total_pnl": 0.0,
                 }
             
-            profitable_trades = [t for t in closed_trades if t.pnl and t.pnl > 0]
-            total_pnl = sum(t.pnl for t in closed_trades if t.pnl)
+            profitable_trades = [t for t in closed_trades if t.realized_pnl and t.realized_pnl > 0]
+            total_pnl = sum(t.realized_pnl for t in closed_trades if t.realized_pnl)
             avg_pnl = total_pnl / len(closed_trades) if closed_trades else 0.0
             
             return {
