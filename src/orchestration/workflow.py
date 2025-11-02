@@ -278,9 +278,66 @@ class TradingWorkflow:
         """
         print(f"[Execution Planning Phase] Planning execution for {state['symbol']}")
         
-        # TODO: Implement execution planning
-        state["execution_plan_complete"] = True
-        state["current_phase"] = "execution_planning"
+        from ..agents.execution import EquityTrader, FnOTrader
+        from ..data.providers import MarketDataProvider
+        from ..data.schemas import StrategyType
+        
+        strategy_proposal = state.get("strategy_proposal")
+        
+        if not strategy_proposal:
+            print("  ✗ No strategy proposal available")
+            state["execution_plan_complete"] = False
+            state["errors"].append("No strategy proposal for execution planning")
+            return state
+        
+        # Select appropriate trader based on strategy type
+        strategy_type = strategy_proposal.strategy_type
+        
+        # Options strategies use FnO trader, equity strategies use equity trader
+        options_strategies = [
+            StrategyType.COVERED_CALL,
+            StrategyType.PROTECTIVE_PUT,
+            StrategyType.BULL_CALL_SPREAD,
+            StrategyType.BEAR_PUT_SPREAD,
+            StrategyType.IRON_CONDOR,
+            StrategyType.STRADDLE,
+            StrategyType.STRANGLE,
+        ]
+        
+        if strategy_type in options_strategies:
+            trader = FnOTrader()
+            trader_type = "FnO"
+        else:
+            trader = EquityTrader()
+            trader_type = "Equity"
+        
+        print(f"  Using {trader_type} Trader for {strategy_type.value}")
+        
+        # Prepare context
+        market_data_provider = MarketDataProvider()
+        context = {
+            "symbol": state["symbol"],
+            "strategy_proposal": strategy_proposal,
+            "market_data_provider": market_data_provider,
+            "portfolio_value": 100000.0,  # Default portfolio value
+        }
+        
+        try:
+            # Create execution plan
+            execution_plan = await trader.create_execution_plan(context)
+            
+            state["execution_plan"] = execution_plan
+            state["execution_plan_complete"] = True
+            state["current_phase"] = "execution_planning"
+            
+            print(f"  ✓ Execution plan created: {len(execution_plan.orders)} order(s)")
+            print(f"  ✓ Estimated cost: ${execution_plan.estimated_cost:.2f}")
+            
+        except Exception as e:
+            print(f"  ✗ Execution planning failed: {e}")
+            state["errors"].append(f"Execution planning error: {str(e)}")
+            state["execution_plan_complete"] = False
+            state["current_phase"] = "execution_planning"
         
         return state
     
