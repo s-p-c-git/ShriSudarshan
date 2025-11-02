@@ -52,7 +52,7 @@ class AgentRole(str, Enum):
     REFLECTIVE_AGENT = "reflective_agent"
 ```
 
-**Total Agents**: 12
+**Total Agents**: 11
 
 #### Sentiment
 
