@@ -57,8 +57,8 @@ Prerequisites
  * API keys for your chosen data vendors (e.g., Alpha Vantage)
 Installation
  * Clone the repository:
-   git clone https://github.com/your-username/shri-sudarshan.git
-cd shri-sudarshan
+   git clone https://github.com/s-p-c-git/ShriSudarshan.git
+   cd ShriSudarshan
 
  * Install dependencies:
    pip install -r requirements.txt
@@ -67,5 +67,40 @@ cd shri-sudarshan
    * Rename .env.example to .env.
    * Add your API keys to the .env file.
 Running the System
-python main.py --symbol AAPL --start_date 2023-01-01 --end_date 2023-01-31
+   cd src
+   python main.py --symbol AAPL --start_date 2023-01-01 --end_date 2023-01-31
+
+6. Project Documentation
+The project includes comprehensive documentation:
+ * APPROACH.md - Detailed approach document with prerequisites, requirements analysis, and implementation plan
+ * IMPLEMENTATION_SUMMARY.md - Complete summary of what has been implemented
+ * docs/architecture.md - System architecture and design details
+ * docs/getting_started.md - Step-by-step installation and usage guide
+
+7. Project Status
+Phase 1 Implementation: COMPLETE ✅
+ * Project structure established
+ * Configuration management system
+ * Base agent framework
+ * Memory system (working, procedural, episodic)
+ * LangGraph orchestration workflow
+ * CLI interface
+ * Comprehensive documentation
+
+Phase 2 Development: IN PROGRESS 🚧
+ * Individual agent implementations
+ * Data provider integrations
+ * Debate mechanism
+ * Risk calculations
+ * Testing framework
+
+8. Architecture Overview
+The system consists of:
+ * 11 specialized LLM agents across 4 teams
+ * 3-layer memory system (working, procedural, episodic)
+ * LangGraph-based orchestration
+ * Multi-phase workflow with approval gates
+ * Risk management and learning loops
+
+For detailed architecture information, see docs/architecture.md.
 
