@@ -30,12 +30,16 @@ jobs:
     
     - name: Run Safety check
       run: |
-        safety check --json --continue-on-error || true
+        safety check --json --continue-on-error
       continue-on-error: true
+    
+    - name: Install project dependencies
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
     - name: Run pip-audit
       run: |
-        pip-audit --desc --requirement requirements.txt
+        pip-audit --desc
       continue-on-error: true
   
   code-scan:
