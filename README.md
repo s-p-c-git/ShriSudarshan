@@ -72,10 +72,30 @@ Running the System
 
 6. Project Documentation
 The project includes comprehensive documentation:
+
+Core Documentation:
  * APPROACH.md - Detailed approach document with prerequisites, requirements analysis, and implementation plan
  * IMPLEMENTATION_SUMMARY.md - Complete summary of what has been implemented
  * docs/architecture.md - System architecture and design details
  * docs/getting_started.md - Step-by-step installation and usage guide
+
+Agent Documentation:
+ * docs/AGENT_BEHAVIORS.md - Complete guide to agent behaviors, decision logic, and interactions
+ * docs/SYSTEM_PROMPTS.md - System prompts for all 11 agents with customization guidance
+
+Technical Documentation:
+ * docs/API_REFERENCE.md - Complete API reference with practical examples
+ * docs/DEPLOYMENT.md - Deployment guide for Docker, Kubernetes, and cloud platforms
+ * docs/TESTING.md - Testing strategies and best practices
+
+Operations Documentation:
+ * docs/TROUBLESHOOTING.md - Common issues and solutions
+ * docs/CONTRIBUTING.md - Contribution guidelines and development workflow
+
+Examples:
+ * examples/simple_analysis.py - Basic workflow usage example
+ * examples/advanced_usage.py - Custom agents and workflow customization
+ * examples/batch_analysis.py - Batch processing and reporting
 
 7. Project Status
 Phase 1 Implementation: COMPLETE ✅
