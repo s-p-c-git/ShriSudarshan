@@ -85,11 +85,88 @@ class TradingWorkflow:
         """
         print(f"[Analysis Phase] Analyzing {state['symbol']}")
         
-        # TODO: Implement concurrent analyst execution
-        # For now, mark as complete
-        state["analysis_complete"] = True
-        state["current_phase"] = "analysis"
-        state["analyst_reports"] = {}
+        from ..agents.market_intelligence import (
+            FundamentalsAnalyst,
+            MacroNewsAnalyst,
+            SentimentAnalyst,
+            TechnicalAnalyst,
+        )
+        from ..data.providers import MarketDataProvider, NewsProvider
+        
+        # Initialize analysts
+        fundamentals_analyst = FundamentalsAnalyst()
+        macro_news_analyst = MacroNewsAnalyst()
+        sentiment_analyst = SentimentAnalyst()
+        technical_analyst = TechnicalAnalyst()
+        
+        # Initialize data providers (shared across analysts)
+        market_data_provider = MarketDataProvider()
+        news_provider = NewsProvider()
+        
+        # Prepare context
+        context = {
+            "symbol": state["symbol"],
+            "start_date": state.get("start_date"),
+            "end_date": state.get("end_date"),
+            "market_data_provider": market_data_provider,
+            "news_provider": news_provider,
+        }
+        
+        try:
+            # Run all analysts concurrently if enabled
+            if settings.enable_concurrent_analysis:
+                import asyncio
+                
+                print("  Running analysts concurrently...")
+                results = await asyncio.gather(
+                    fundamentals_analyst.analyze(context),
+                    macro_news_analyst.analyze(context),
+                    sentiment_analyst.analyze(context),
+                    technical_analyst.analyze(context),
+                    return_exceptions=True,
+                )
+                
+                # Unpack results
+                fundamentals_report = results[0] if not isinstance(results[0], Exception) else None
+                macro_news_report = results[1] if not isinstance(results[1], Exception) else None
+                sentiment_report = results[2] if not isinstance(results[2], Exception) else None
+                technical_report = results[3] if not isinstance(results[3], Exception) else None
+                
+                # Log any errors
+                for i, result in enumerate(results):
+                    if isinstance(result, Exception):
+                        analyst_names = ["Fundamentals", "MacroNews", "Sentiment", "Technical"]
+                        print(f"  ⚠ {analyst_names[i]} Analyst failed: {result}")
+                        state["errors"].append(f"{analyst_names[i]} analysis failed: {str(result)}")
+            else:
+                # Run sequentially
+                print("  Running analysts sequentially...")
+                fundamentals_report = await fundamentals_analyst.analyze(context)
+                macro_news_report = await macro_news_analyst.analyze(context)
+                sentiment_report = await sentiment_analyst.analyze(context)
+                technical_report = await technical_analyst.analyze(context)
+            
+            # Store reports
+            state["analyst_reports"] = {
+                "fundamentals": fundamentals_report,
+                "macro_news": macro_news_report,
+                "sentiment": sentiment_report,
+                "technical": technical_report,
+            }
+            
+            # Print summary
+            print(f"  ✓ Fundamentals: {fundamentals_report.investment_thesis.value if fundamentals_report else 'failed'}")
+            print(f"  ✓ Macro/News: {macro_news_report.market_sentiment.value if macro_news_report else 'failed'}")
+            print(f"  ✓ Sentiment: {sentiment_report.social_sentiment.value if sentiment_report else 'failed'}")
+            print(f"  ✓ Technical: {technical_report.trend_direction.value if technical_report else 'failed'}")
+            
+            state["analysis_complete"] = True
+            state["current_phase"] = "analysis"
+            
+        except Exception as e:
+            print(f"  ✗ Analysis phase failed: {e}")
+            state["errors"].append(f"Analysis phase error: {str(e)}")
+            state["analysis_complete"] = False
         
         return state
     
