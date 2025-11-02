@@ -198,6 +198,51 @@ class FnOTrader(BaseAgent):
                 limit_price=current_price * 0.03,
             ))
         
+        elif strategy_type == StrategyType.IRON_CONDOR:
+            # Sell call spread + Sell put spread (4 legs)
+            # Profit from low volatility / range-bound movement
+            contracts = max(1, int(position_value / (current_price * 100) / 4))
+            
+            # Call spread (sell ATM, buy OTM call)
+            strike_sell_call = current_price * 1.025
+            strike_buy_call = current_price * 1.05
+            
+            orders.append(Order(
+                symbol=f"{symbol}_CALL_{strike_sell_call:.0f}",
+                order_type=OrderType.LIMIT,
+                side=OrderSide.SELL,
+                quantity=contracts,
+                limit_price=current_price * 0.04,
+            ))
+            
+            orders.append(Order(
+                symbol=f"{symbol}_CALL_{strike_buy_call:.0f}",
+                order_type=OrderType.LIMIT,
+                side=OrderSide.BUY,
+                quantity=contracts,
+                limit_price=current_price * 0.02,
+            ))
+            
+            # Put spread (sell ATM, buy OTM put)
+            strike_sell_put = current_price * 0.975
+            strike_buy_put = current_price * 0.95
+            
+            orders.append(Order(
+                symbol=f"{symbol}_PUT_{strike_sell_put:.0f}",
+                order_type=OrderType.LIMIT,
+                side=OrderSide.SELL,
+                quantity=contracts,
+                limit_price=current_price * 0.04,
+            ))
+            
+            orders.append(Order(
+                symbol=f"{symbol}_PUT_{strike_buy_put:.0f}",
+                order_type=OrderType.LIMIT,
+                side=OrderSide.BUY,
+                quantity=contracts,
+                limit_price=current_price * 0.02,
+            ))
+        
         elif strategy_type == StrategyType.CALENDAR_SPREAD:
             # Buy far-dated option + Sell near-dated option (same strike)
             contracts = max(1, int(position_value / (current_price * 100) / 2))
@@ -260,8 +305,10 @@ class FnOTrader(BaseAgent):
                 StrategyType.PROTECTIVE_PUT,
                 StrategyType.BULL_CALL_SPREAD,
                 StrategyType.BEAR_PUT_SPREAD,
+                StrategyType.IRON_CONDOR,
                 StrategyType.STRADDLE,
                 StrategyType.STRANGLE,
+                StrategyType.CALENDAR_SPREAD,
             ]:
                 orders = self._create_option_legs(
                     symbol,
