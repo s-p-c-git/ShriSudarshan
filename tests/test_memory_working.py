@@ -220,7 +220,7 @@ class TestWorkingMemory:
         memory.set("key", "value2")
         assert memory.get("key") == "value2"
     
-    def test_global_instance():
+    def test_global_instance(self):
         """Test that global working memory instance is available."""
         from src.memory.working import working_memory
         
