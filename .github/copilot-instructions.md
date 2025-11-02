@@ -122,7 +122,7 @@ src/
 
 ### Procedural Memory
 - Stores successful workflow patterns
-- Uses ChromaDB for vector storage
+- Uses ChromaDB (version 0.4.0+) for vector storage
 - Helps optimize agent task execution
 
 ### Episodic Memory
@@ -250,9 +250,9 @@ async def run_analysis_phase(context):
 
 ### Supported Providers
 
-- **yfinance**: Stock price data, historical data
-- **Alpha Vantage**: Fundamentals, news (requires API key)
-- **Tradier**: Options data, Greeks (requires API key)
+- **yfinance**: Stock price data, historical data (currently implemented)
+- **Alpha Vantage**: Fundamentals, news (API key optional, see `.env.example`)
+- **Tradier**: Options data, Greeks (planned for future implementation, API key configuration available)
 
 ### API Call Guidelines
 
@@ -320,7 +320,7 @@ async def run_analysis_phase(context):
 3. Install dependencies: `pip install -r requirements.txt`
 4. Run tests: `pytest`
 5. Run linting: `ruff check src/` and `black --check src/`
-6. Run the system: `python src/main.py --symbol AAPL`
+6. Run the system: `cd src && python main.py --symbol AAPL`
 
 ### Code Quality Tools
 
