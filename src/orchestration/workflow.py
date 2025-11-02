@@ -174,14 +174,61 @@ class TradingWorkflow:
         """
         Strategy & Research Team debate phase.
         
-        Bullish and bearish researchers debate the strategy.
+        Bullish and bearish researchers engage in multi-round debate.
         """
         print(f"[Debate Phase] Debating strategy for {state['symbol']}")
         
-        # TODO: Implement multi-round debate mechanism
-        state["debate_complete"] = True
-        state["current_phase"] = "debate"
-        state["debate_rounds"] = 1
+        from ..agents.strategy_research import BullishResearcher, BearishResearcher
+        
+        # Initialize researchers
+        bullish_researcher = BullishResearcher()
+        bearish_researcher = BearishResearcher()
+        
+        # Prepare context
+        context = {
+            "symbol": state["symbol"],
+            "analyst_reports": state.get("analyst_reports", {}),
+        }
+        
+        debate_arguments = []
+        max_rounds = settings.max_debate_rounds
+        
+        try:
+            print(f"  Starting {max_rounds}-round debate...")
+            
+            for round_num in range(1, max_rounds + 1):
+                print(f"  Round {round_num}/{max_rounds}")
+                
+                # Bullish researcher argues first
+                bullish_arg = await bullish_researcher.debate(
+                    context,
+                    round_number=round_num,
+                    previous_arguments=debate_arguments,
+                )
+                debate_arguments.append(bullish_arg)
+                print(f"    ✓ Bullish: {bullish_arg.argument[:100]}...")
+                
+                # Bearish researcher responds
+                bearish_arg = await bearish_researcher.debate(
+                    context,
+                    round_number=round_num,
+                    previous_arguments=debate_arguments,
+                )
+                debate_arguments.append(bearish_arg)
+                print(f"    ✓ Bearish: {bearish_arg.argument[:100]}...")
+            
+            state["debate_arguments"] = debate_arguments
+            state["debate_rounds"] = max_rounds
+            state["debate_complete"] = True
+            state["current_phase"] = "debate"
+            
+            print(f"  Debate concluded after {max_rounds} rounds")
+            
+        except Exception as e:
+            print(f"  ✗ Debate phase failed: {e}")
+            state["errors"].append(f"Debate phase error: {str(e)}")
+            state["debate_arguments"] = debate_arguments  # Save what we have
+            state["debate_complete"] = False
         
         return state
     
@@ -191,9 +238,37 @@ class TradingWorkflow:
         """
         print(f"[Strategy Phase] Formulating strategy for {state['symbol']}")
         
-        # TODO: Implement strategy formulation
-        state["strategy_complete"] = True
-        state["current_phase"] = "strategy"
+        from ..agents.strategy_research import DerivativesStrategist
+        from ..data.providers import MarketDataProvider
+        
+        # Initialize strategist
+        derivatives_strategist = DerivativesStrategist()
+        market_data_provider = MarketDataProvider()
+        
+        # Prepare context
+        context = {
+            "symbol": state["symbol"],
+            "debate_arguments": state.get("debate_arguments", []),
+            "analyst_reports": state.get("analyst_reports", {}),
+            "market_data_provider": market_data_provider,
+        }
+        
+        try:
+            # Formulate strategy
+            strategy_proposal = await derivatives_strategist.formulate_strategy(context)
+            
+            state["strategy_proposal"] = strategy_proposal
+            state["strategy_complete"] = True
+            state["current_phase"] = "strategy"
+            
+            print(f"  ✓ Strategy: {strategy_proposal.strategy_type.value} ({strategy_proposal.direction.value})")
+            print(f"  ✓ Expected Return: {strategy_proposal.expected_return:.1f}%, Max Loss: {strategy_proposal.max_loss:.1f}%")
+            
+        except Exception as e:
+            print(f"  ✗ Strategy formulation failed: {e}")
+            state["errors"].append(f"Strategy phase error: {str(e)}")
+            state["strategy_complete"] = False
+            state["current_phase"] = "strategy"
         
         return state
     
