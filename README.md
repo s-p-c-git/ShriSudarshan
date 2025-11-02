@@ -1,4 +1,10 @@
 Project Shri Sudarshan: A Hybrid Multi-Agent LLM Architecture for Stock and Derivatives Trading
+
+![Test](https://github.com/s-p-c-git/ShriSudarshan/workflows/Test/badge.svg)
+![Lint](https://github.com/s-p-c-git/ShriSudarshan/workflows/Lint/badge.svg)
+![Build](https://github.com/s-p-c-git/ShriSudarshan/workflows/Build/badge.svg)
+![Security](https://github.com/s-p-c-git/ShriSudarshan/workflows/Security/badge.svg)
+
 1. Overview
 This document outlines the architecture and development plan for "Project Shri Sudarshan," a sophisticated, LLM-based multi-agent system for trading stocks and Futures & Options (FnO). The primary objective of this system is to maximize profit through a robust, collaborative, and self-improving decision-making process that embodies precision, protection, and divine vision.
 The design is a hybrid model that synthesizes the most effective concepts from our comprehensive research, primarily contrasting and combining the strengths of:
