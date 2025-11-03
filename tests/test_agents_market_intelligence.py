@@ -367,15 +367,14 @@ async def test_market_intelligence_agents_no_api_calls(sample_context):
 
 
 @pytest.mark.asyncio
-async def test_market_intelligence_performance():
+async def test_market_intelligence_performance(sample_context):
     """Test that mock agents execute quickly."""
     import time
     
     agent = MockFundamentalsAnalyst()
-    context = {"symbol": "AAPL"}
     
     start = time.time()
-    report = await agent.analyze(context)
+    report = await agent.analyze(sample_context)
     duration = time.time() - start
     
     # Mock agents should be very fast (< 0.1 seconds)

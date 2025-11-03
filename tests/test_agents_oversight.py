@@ -409,15 +409,14 @@ async def test_oversight_agents_no_api_calls(sample_context, sample_risk_assessm
 
 
 @pytest.mark.asyncio
-async def test_oversight_performance():
+async def test_oversight_performance(sample_context):
     """Test that mock agents execute quickly."""
     import time
     
     agent = MockRiskManager()
-    context = {"symbol": "AAPL"}
     
     start = time.time()
-    assessment = await agent.assess_risk(context)
+    assessment = await agent.assess_risk(sample_context)
     duration = time.time() - start
     
     # Mock agents should be very fast (< 0.1 seconds)

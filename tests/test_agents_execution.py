@@ -352,15 +352,14 @@ async def test_execution_agents_no_api_calls(sample_context):
 
 
 @pytest.mark.asyncio
-async def test_execution_performance():
+async def test_execution_performance(sample_context):
     """Test that mock agents execute quickly."""
     import time
     
     agent = MockEquityTrader()
-    context = {"symbol": "AAPL"}
     
     start = time.time()
-    plan = await agent.create_execution_plan(context)
+    plan = await agent.create_execution_plan(sample_context)
     duration = time.time() - start
     
     # Mock agents should be very fast (< 0.1 seconds)
@@ -369,15 +368,14 @@ async def test_execution_performance():
 
 
 @pytest.mark.asyncio
-async def test_execution_plans_are_different():
+async def test_execution_plans_are_different(sample_context):
     """Test that different traders produce different execution plans."""
-    context = {"symbol": "AAPL"}
     
     equity_trader = MockEquityTrader()
     fno_trader = MockFnOTrader()
     
-    equity_plan = await equity_trader.create_execution_plan(context)
-    fno_plan = await fno_trader.create_execution_plan(context)
+    equity_plan = await equity_trader.create_execution_plan(sample_context)
+    fno_plan = await fno_trader.create_execution_plan(sample_context)
     
     # Plans should have different characteristics
     # F&O plans typically have more orders and higher costs

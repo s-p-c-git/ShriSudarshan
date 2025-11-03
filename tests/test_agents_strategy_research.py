@@ -179,12 +179,11 @@ async def test_bull_bear_debate_interaction(sample_context):
 
 
 @pytest.mark.asyncio
-async def test_debate_argument_timestamps():
+async def test_debate_argument_timestamps(sample_context):
     """Test debate arguments have valid timestamps."""
     agent = MockBullishResearcher()
-    context = {"symbol": "AAPL"}
     
-    argument = await agent.debate(context, round_number=1)
+    argument = await agent.debate(sample_context, round_number=1)
     
     assert argument.timestamp is not None
 
@@ -364,15 +363,14 @@ async def test_strategy_research_agents_no_api_calls(sample_context):
 
 
 @pytest.mark.asyncio
-async def test_strategy_research_performance():
+async def test_strategy_research_performance(sample_context):
     """Test that mock agents execute quickly."""
     import time
     
     agent = MockDerivativesStrategist()
-    context = {"symbol": "AAPL"}
     
     start = time.time()
-    proposal = await agent.propose_strategy(context)
+    proposal = await agent.propose_strategy(sample_context)
     duration = time.time() - start
     
     # Mock agents should be very fast (< 0.1 seconds)
