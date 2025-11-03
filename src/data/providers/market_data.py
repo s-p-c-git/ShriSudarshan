@@ -1,11 +1,12 @@
 """Market data provider using yfinance."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import pandas as pd
 import yfinance as yf
 
 from src.utils.logger import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -15,7 +16,7 @@ class MarketDataProvider:
 
     def __init__(self):
         """Initialize the market data provider."""
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
         logger.info("MarketDataProvider initialized")
 
     def get_price_history(
@@ -74,7 +75,7 @@ class MarketDataProvider:
             logger.error("Failed to get current price", symbol=symbol, error=str(e))
             return None
 
-    def get_fundamentals(self, symbol: str) -> Dict[str, Any]:
+    def get_fundamentals(self, symbol: str) -> dict[str, Any]:
         """
         Get fundamental data for a symbol.
 
@@ -119,7 +120,7 @@ class MarketDataProvider:
             logger.error("Failed to get fundamentals", symbol=symbol, error=str(e))
             return {"symbol": symbol, "error": str(e)}
 
-    def get_financial_statements(self, symbol: str) -> Dict[str, pd.DataFrame]:
+    def get_financial_statements(self, symbol: str) -> dict[str, pd.DataFrame]:
         """
         Get financial statements for a symbol.
 
@@ -155,7 +156,7 @@ class MarketDataProvider:
                 "quarterly_cash_flow": pd.DataFrame(),
             }
 
-    def get_options_chain(self, symbol: str, expiry_date: Optional[str] = None) -> Dict[str, Any]:
+    def get_options_chain(self, symbol: str, expiry_date: Optional[str] = None) -> dict[str, Any]:
         """
         Get options chain for a symbol.
 
@@ -198,7 +199,7 @@ class MarketDataProvider:
             logger.error("Failed to get options chain", symbol=symbol, error=str(e))
             return {"calls": pd.DataFrame(), "puts": pd.DataFrame()}
 
-    def get_available_expiries(self, symbol: str) -> List[str]:
+    def get_available_expiries(self, symbol: str) -> list[str]:
         """
         Get available expiry dates for options.
 
@@ -217,7 +218,7 @@ class MarketDataProvider:
             logger.error("Failed to get expiries", symbol=symbol, error=str(e))
             return []
 
-    def calculate_technical_indicators(self, symbol: str) -> Dict[str, Any]:
+    def calculate_technical_indicators(self, symbol: str) -> dict[str, Any]:
         """
         Calculate technical indicators for a symbol.
 
@@ -345,7 +346,7 @@ class MarketDataProvider:
 
         return rsi.iloc[-1]
 
-    def get_market_overview(self) -> Dict[str, Any]:
+    def get_market_overview(self) -> dict[str, Any]:
         """
         Get overview of major market indices.
 

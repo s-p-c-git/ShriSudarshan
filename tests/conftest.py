@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, Mock
 import pandas as pd
 import pytest
 
+
 # Set required environment variables before any imports that use Settings
 os.environ.setdefault("OPENAI_API_KEY", "test-key-123")
 os.environ.setdefault("PREMIUM_MODEL", "gpt-4o")
