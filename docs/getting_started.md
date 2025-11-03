@@ -47,14 +47,59 @@ pip install -r requirements.txt
    cp .env.example .env
    ```
 
-2. Edit `.env` and add your API keys:
+2. Edit `.env` and configure your LLM provider:
+
+   **Option A: Using OpenAI (Default)**
    ```bash
-   # Required
+   # LLM Provider
+   LLM_PROVIDER=openai
+   
+   # OpenAI API Key (Required)
    OPENAI_API_KEY=sk-your-openai-api-key-here
    
+   # OpenAI Models
+   PREMIUM_MODEL=gpt-4o
+   STANDARD_MODEL=gpt-4o-mini
+   ```
+
+   **Option B: Using Anthropic Claude**
+   ```bash
+   # LLM Provider
+   LLM_PROVIDER=anthropic
+   
+   # Anthropic API Key (Required)
+   ANTHROPIC_API_KEY=sk-ant-your-anthropic-api-key-here
+   
+   # Anthropic Models
+   ANTHROPIC_PREMIUM_MODEL=claude-3-5-sonnet-20241022
+   ANTHROPIC_STANDARD_MODEL=claude-3-5-sonnet-20241022
+   ```
+
+3. Add optional data provider API keys:
+   ```bash
    # Optional (for enhanced features)
    ALPHA_VANTAGE_API_KEY=your-alpha-vantage-key
    ```
+
+### LLM Provider Selection
+
+The system supports two LLM providers:
+
+**OpenAI**
+- Models: GPT-4o (premium), GPT-4o-mini (standard)
+- Known for strong reasoning and code generation
+- Requires OpenAI API key from https://platform.openai.com
+
+**Anthropic Claude**
+- Models: Claude 3.5 Sonnet
+- Known for strong analytical and reasoning capabilities
+- Requires Anthropic API key from https://console.anthropic.com
+
+**Which to choose?**
+- Start with OpenAI if you already have an API key
+- Try Anthropic for competitive pricing and different capabilities
+- Both work equally well with the system
+- You can switch between them by changing `LLM_PROVIDER` in `.env`
 
 ## Basic Usage
 
@@ -191,12 +236,23 @@ Execution Complete: True
 
 ## Troubleshooting
 
-### "OpenAI API key not configured"
+### "OpenAI API key not configured" or "Anthropic API key not configured"
 
 Make sure you've:
 1. Copied `.env.example` to `.env`
-2. Added your OpenAI API key to `.env`
-3. The key starts with `sk-`
+2. Set `LLM_PROVIDER` to either `openai` or `anthropic`
+3. Added the corresponding API key to `.env`:
+   - For OpenAI: Key starts with `sk-` (from https://platform.openai.com)
+   - For Anthropic: Key starts with `sk-ant-` (from https://console.anthropic.com)
+
+### Switching Between LLM Providers
+
+To switch from OpenAI to Anthropic (or vice versa):
+1. Update `LLM_PROVIDER` in `.env`
+2. Ensure the corresponding API key is set
+3. Restart the application
+
+No code changes needed!
 
 ### Import Errors
 
@@ -232,15 +288,33 @@ MAX_SECTOR_CONCENTRATION=0.25 # 25% max per sector
 
 ### LLM Models
 
-Choose between different models:
+Choose between different providers and models:
 
+**OpenAI Models:**
 ```bash
+LLM_PROVIDER=openai
+
 # For critical decisions (expensive but better)
 PREMIUM_MODEL=gpt-4o
 
 # For routine analysis (cheaper)
 STANDARD_MODEL=gpt-4o-mini
 ```
+
+**Anthropic Models:**
+```bash
+LLM_PROVIDER=anthropic
+
+# Claude 3.5 Sonnet for both critical and routine tasks
+ANTHROPIC_PREMIUM_MODEL=claude-3-5-sonnet-20241022
+ANTHROPIC_STANDARD_MODEL=claude-3-5-sonnet-20241022
+```
+
+**Cost Considerations:**
+- OpenAI GPT-4o-mini is most cost-effective
+- Claude 3.5 Sonnet offers competitive pricing
+- Use premium models for critical decisions (Portfolio Manager, Risk Manager)
+- Use standard models for routine analysis (Market Intelligence team)
 
 ### Agent Configuration
 
