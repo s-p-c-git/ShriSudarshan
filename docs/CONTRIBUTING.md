@@ -5,12 +5,63 @@ Thank you for your interest in contributing to Project Shri Sudarshan! This guid
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
+- [⚠️ **Important: Code Formatting Requirements**](#important-code-formatting-requirements)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
 - [Coding Standards](#coding-standards)
 - [Testing Guidelines](#testing-guidelines)
 - [Pull Request Process](#pull-request-process)
 - [Areas for Contribution](#areas-for-contribution)
+
+---
+
+## ⚠️ **Important: Code Formatting Requirements**
+
+**ALL CODE MUST BE FORMATTED BEFORE COMMITTING!** This is enforced by CI/CD and will block your PR from merging.
+
+### Required Setup (Do This First!)
+
+**Step 1:** Install development tools:
+```bash
+pip install black ruff mypy pytest pytest-asyncio pytest-cov pre-commit
+```
+
+**Step 2:** Install pre-commit hooks (MANDATORY):
+```bash
+pre-commit install
+```
+
+This will automatically format your code with Black and organize imports with Ruff on every commit.
+
+### Manual Formatting (If Needed)
+
+If you need to format code manually or if CI fails:
+
+```bash
+# Format all code with Black
+black src/ tests/ examples/
+
+# Fix import organization and other issues with Ruff
+ruff check --fix src/ tests/ examples/
+
+# Verify formatting is correct
+black --check src/ tests/ examples/
+ruff check src/ tests/ examples/
+```
+
+### Why This Matters
+
+- **CI/CD will FAIL** if code is not properly formatted
+- **PRs cannot be merged** without passing formatting checks
+- Formatting prevents recurring issues and maintains code quality
+- Pre-commit hooks save time by catching issues before CI/CD
+
+### For AI/Copilot Generated Code
+
+All AI-generated or modified code must also be formatted:
+1. After generating code, always run: `black src/ tests/ examples/`
+2. Then run: `ruff check --fix src/ tests/ examples/`
+3. Commit the formatted code
 
 ---
 
@@ -78,17 +129,19 @@ We are committed to providing a welcoming and inclusive environment for all cont
    pip install -r requirements.txt
    ```
 
-6. **Install development tools**:
+6. **Install development tools (REQUIRED)**:
    ```bash
    pip install black ruff mypy pytest pytest-asyncio pytest-cov pre-commit
    ```
 
-7. **Set up pre-commit hooks** (optional but recommended):
+7. **Set up pre-commit hooks (REQUIRED - NOT OPTIONAL)**:
    ```bash
    pre-commit install
    ```
    
-   This will automatically run Black and Ruff on every commit to catch style issues early.
+   ⚠️ **This step is MANDATORY!** Pre-commit hooks will automatically format your code with Black and organize imports with Ruff on every commit. This prevents CI/CD failures and ensures all code meets our formatting standards.
+   
+   After installing, the hooks will run automatically on every `git commit`. If formatting issues are found, they'll be fixed automatically, and you'll need to stage the changes and commit again.
 
 8. **Configure environment**:
    ```bash
@@ -137,29 +190,41 @@ We are committed to providing a welcoming and inclusive environment for all cont
    pytest tests/
    ```
 
-4. **Format code**:
+4. **Format and lint your code** (REQUIRED - Pre-commit hooks do this automatically):
+   
+   If you have pre-commit hooks installed (step 7 in setup), **formatting happens automatically** when you commit. The hooks will:
+   - Format code with Black
+   - Organize imports with Ruff
+   - Fix trailing whitespace and other issues
+   
+   If hooks find issues, they'll fix them automatically. You just need to:
    ```bash
-   black src/ tests/
-   ```
-
-5. **Lint code** (must pass with no errors):
-   ```bash
-   ruff check src/ tests/
+   git add .
+   git commit -m "your message"
+   # If hooks made changes, add them and commit again:
+   git add .
+   git commit -m "your message"
    ```
    
-   **Note**: Ruff enforces:
-   - Import sorting (PEP 8 standards)
-   - Use of native types (`dict`, `list`, `tuple`) instead of deprecated `Dict`, `List`, `Tuple` from typing
-   - Code quality and style rules
+   **Manual formatting** (if you didn't install pre-commit hooks or need to check):
+   ```bash
+   # Format code with Black
+   black src/ tests/ examples/
    
-   Use `ruff check --fix` to auto-fix many issues.
+   # Fix import organization and linting issues
+   ruff check --fix src/ tests/ examples/
+   
+   # Verify everything passes
+   black --check src/ tests/ examples/
+   ruff check src/ tests/ examples/
+   ```
 
-6. **Type check**:
+5. **Type check** (optional but recommended):
    ```bash
    mypy src/
    ```
 
-7. **Commit changes**:
+6. **Commit changes**:
    ```bash
    git add .
    git commit -m "feat: add new feature description"
@@ -455,29 +520,62 @@ async def test_async_function():
 
 ### Before Submitting
 
-1. **Update documentation** if needed
-2. **Add tests** for new functionality
-3. **Run full test suite**:
+⚠️ **CRITICAL: Formatting Must Pass!** Your PR will be blocked if formatting checks fail.
+
+1. **Verify formatting** (pre-commit hooks should have done this automatically):
+   ```bash
+   # Check formatting
+   black --check src/ tests/ examples/
+   ruff check src/ tests/ examples/
+   ```
+   
+   If checks fail, fix them:
+   ```bash
+   # Fix formatting issues
+   black src/ tests/ examples/
+   ruff check --fix src/ tests/ examples/
+   ```
+
+2. **Update documentation** if needed
+
+3. **Add tests** for new functionality
+
+4. **Run full test suite**:
    ```bash
    pytest tests/
    ```
 
-4. **Format and lint code**:
+5. **Optional: Type check**:
    ```bash
-   black src/ tests/
-   ruff check src/ tests/
    mypy src/
    ```
-   
-   **Tip**: If you've set up pre-commit hooks (step 7 in setup), these checks run automatically on commit.
 
-5. **Update CHANGELOG** (if applicable)
+6. **Update CHANGELOG** (if applicable)
 
-6. **Rebase on latest main**:
+7. **Rebase on latest main**:
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
+
+### What CI/CD Will Check
+
+When you open a PR, automated checks will run:
+
+1. **✅ Formatting Check (BLOCKING)**: 
+   - Black formatting must pass
+   - Ruff linting must pass with zero errors
+   - **If these fail, PR cannot be merged**
+
+2. **✅ Tests (BLOCKING)**:
+   - All tests must pass
+   - Minimum 40% code coverage required
+
+3. **✅ Build (BLOCKING)**:
+   - Package must build successfully
+
+4. **ℹ️ Type Checking (NON-BLOCKING)**:
+   - mypy warnings are shown but don't block merges
 
 ### Creating Pull Request
 
@@ -515,24 +613,33 @@ test: Add tests for risk manager
 
 ### Review Process
 
-1. **Automated checks** will run:
-   - Tests
-   - Linting
-   - Type checking
-   - Coverage
+1. **Automated checks** will run (some are BLOCKING):
+   - ✅ **Formatting** (Black & Ruff) - BLOCKING, must pass
+   - ✅ **Tests** - BLOCKING, must pass
+   - ✅ **Build** - BLOCKING, must pass
+   - ℹ️ **Type checking** (mypy) - Non-blocking, warnings only
+   - ℹ️ **Coverage** - Reported but doesn't block
 
-2. **Maintainer review**:
+2. **If formatting fails**:
+   - Pull the latest changes
+   - Run `black src/ tests/ examples/`
+   - Run `ruff check --fix src/ tests/ examples/`
+   - Commit and push the fixes
+   - CI will re-run automatically
+
+3. **Maintainer review**:
    - Code quality
    - Test coverage
    - Documentation
    - Adherence to standards
 
-3. **Address feedback**:
+4. **Address feedback**:
    - Make requested changes
    - Push updates to same branch
    - PR updates automatically
+   - **Remember to format any new changes!**
 
-4. **Approval and merge**:
+5. **Approval and merge**:
    - Maintainer will merge when ready
    - Squash merge for clean history
 
@@ -650,6 +757,62 @@ Contributors will be:
 ## License
 
 By contributing, you agree that your contributions will be licensed under the same license as the project (see LICENSE file).
+
+---
+
+## Quick Reference: Formatting Commands
+
+### Setup (One Time)
+```bash
+pip install black ruff mypy pre-commit
+pre-commit install
+```
+
+### Before Every Commit
+Pre-commit hooks run automatically! But if you need to run manually:
+
+```bash
+# Format code
+black src/ tests/ examples/
+
+# Fix linting and imports
+ruff check --fix src/ tests/ examples/
+
+# Verify everything passes
+black --check src/ tests/ examples/
+ruff check src/ tests/ examples/
+```
+
+### If CI Formatting Check Fails
+```bash
+# Pull latest changes
+git pull origin your-branch-name
+
+# Format everything
+black src/ tests/ examples/
+ruff check --fix src/ tests/ examples/
+
+# Verify it's fixed
+black --check src/ tests/ examples/
+ruff check src/ tests/ examples/
+
+# Commit and push
+git add .
+git commit -m "fix: apply Black and Ruff formatting"
+git push
+```
+
+### Running Tests
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage
+pytest --cov=src tests/
+
+# Run specific test file
+pytest tests/test_agents_base.py
+```
 
 ---
 

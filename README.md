@@ -160,3 +160,35 @@ The system consists of:
 
 For detailed architecture information, see docs/architecture.md.
 
+9. Contributing
+
+**⚠️ Important: All code must be formatted with Black and Ruff before committing!**
+
+We welcome contributions! Before you start:
+
+1. **Set up pre-commit hooks (REQUIRED)**:
+   ```bash
+   pip install black ruff mypy pre-commit
+   pre-commit install
+   ```
+
+2. **Format your code**:
+   ```bash
+   black src/ tests/ examples/
+   ruff check --fix src/ tests/ examples/
+   ```
+
+3. **Run tests**:
+   ```bash
+   pytest tests/
+   ```
+
+**Pre-commit hooks will automatically format your code on every commit. CI/CD will block PRs that don't pass formatting checks.**
+
+For detailed contributing guidelines, see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+Quick reference:
+- Setup and workflow: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- Coding standards: [.github/copilot-instructions.md](.github/copilot-instructions.md)
+- Testing guide: [docs/TESTING.md](docs/TESTING.md)
+
