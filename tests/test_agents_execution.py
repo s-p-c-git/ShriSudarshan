@@ -165,7 +165,7 @@ async def test_fno_trader_options_orders(sample_context):
             assert order.option_type in ["call", "put"]
     
     # At least one order should be an option for F&O trader
-    assert has_options
+    assert has_options, "F&O trader should create at least one options order"
 
 
 @pytest.mark.asyncio
