@@ -11,6 +11,8 @@ import pytest
 os.environ.setdefault("OPENAI_API_KEY", "test-key-123")
 os.environ.setdefault("PREMIUM_MODEL", "gpt-4o")
 os.environ.setdefault("STANDARD_MODEL", "gpt-4o-mini")
+os.environ.setdefault("LLM_PROVIDER", "openai")
+os.environ.setdefault("ANTHROPIC_API_KEY", "test-anthropic-key-123")
 
 from src.data.schemas import (
     AgentRole,
