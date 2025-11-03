@@ -1,12 +1,13 @@
 """Strategy & Research Team - Bullish Researcher."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
-from ..base import BaseAgent
 from ...config.prompts import BULLISH_RESEARCHER_PROMPT
 from ...data.schemas import AgentRole, DebateArgument, Sentiment
 from ...utils import get_logger
+from ..base import BaseAgent
+
 
 logger = get_logger(__name__)
 
@@ -14,46 +15,46 @@ logger = get_logger(__name__)
 class BullishResearcher(BaseAgent):
     """
     Bullish Researcher agent.
-    
+
     Constructs the strongest possible argument for taking long positions
     based on analyst reports.
     """
-    
+
     def __init__(self):
         super().__init__(
             role=AgentRole.BULLISH_RESEARCHER,
             system_prompt=BULLISH_RESEARCHER_PROMPT,
             temperature=0.7,  # Higher temperature for creative argumentation
         )
-    
+
     async def debate(
         self,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         round_number: int,
         previous_arguments: list[DebateArgument] = None,
     ) -> DebateArgument:
         """
         Make a bullish argument in the debate.
-        
+
         Args:
             context: Contains analyst reports and symbol
             round_number: Current debate round
             previous_arguments: Arguments from previous rounds
-            
+
         Returns:
             DebateArgument with bullish position
         """
         symbol = context.get("symbol", "UNKNOWN")
         analyst_reports = context.get("analyst_reports", {})
-        
+
         logger.info("Bullish researcher debating", symbol=symbol, round=round_number)
-        
+
         # Extract key information from analyst reports
         fundamentals = analyst_reports.get("fundamentals")
         macro_news = analyst_reports.get("macro_news")
         sentiment = analyst_reports.get("sentiment")
         technical = analyst_reports.get("technical")
-        
+
         # Build context for this round
         if round_number == 1:
             # First round - build initial case
@@ -79,8 +80,8 @@ SENTIMENT:
 
 TECHNICAL:
 - Trend: {technical.trend_direction.value if technical else 'N/A'}
-- Support: {', '.join([f'${x:.2f}' for x in technical.support_levels if technical else []])}
-- Resistance: {', '.join([f'${x:.2f}' for x in technical.resistance_levels if technical else []])}
+- Support: {', '.join([f'${x:.2f}' for x in (technical.support_levels if technical else [])])}
+- Resistance: {', '.join([f'${x:.2f}' for x in (technical.resistance_levels if technical else [])])}
 - Patterns: {', '.join(technical.chart_patterns if technical else [])}
 - Confidence: {technical.confidence_level if technical else 0}/10
 
@@ -106,7 +107,7 @@ Provide your argument in JSON format:
             # Subsequent rounds - respond to bearish counterarguments
             bearish_args = [arg for arg in previous_arguments if arg.position == Sentiment.BEARISH]
             latest_bearish = bearish_args[-1] if bearish_args else None
-            
+
             input_text = f"""
 This is debate round {round_number} for {symbol}.
 
@@ -130,11 +131,11 @@ Provide your counter-argument in JSON format:
     "argument_text": "full counter-argument text"
 }}
 """
-        
+
         try:
             # Generate argument
             response = await self._generate_response(input_text)
-            
+
             # Parse JSON response
             try:
                 if "```json" in response:
@@ -143,26 +144,26 @@ Provide your counter-argument in JSON format:
                     json_str = response.split("```")[1].split("```")[0].strip()
                 else:
                     json_str = response.strip()
-                
+
                 parsed = json.loads(json_str)
-                
+
                 if round_number == 1:
                     supporting_evidence = parsed.get("supporting_evidence", [])
                     counterpoints = []
                 else:
                     supporting_evidence = parsed.get("additional_evidence", [])
                     counterpoints = parsed.get("counterpoints", [])
-                
+
                 conviction = parsed.get("conviction_level", 7)
                 argument_text = parsed.get("argument_text", response[:500])
-                
+
             except (json.JSONDecodeError, KeyError, IndexError) as e:
                 logger.warning("Failed to parse response, using full text", error=str(e))
                 supporting_evidence = ["See full argument"]
                 counterpoints = []
                 conviction = 7
                 argument_text = response
-            
+
             argument = DebateArgument(
                 round_number=round_number,
                 role=AgentRole.BULLISH_RESEARCHER,
@@ -171,19 +172,19 @@ Provide your counter-argument in JSON format:
                 supporting_evidence=supporting_evidence,
                 counterpoints=counterpoints,
             )
-            
+
             logger.info(
                 "Bullish argument complete",
                 symbol=symbol,
                 round=round_number,
                 conviction=conviction,
             )
-            
+
             return argument
-            
+
         except Exception as e:
             logger.error("Bullish debate failed", symbol=symbol, round=round_number, error=str(e))
-            
+
             return DebateArgument(
                 round_number=round_number,
                 role=AgentRole.BULLISH_RESEARCHER,

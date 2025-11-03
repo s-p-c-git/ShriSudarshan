@@ -1,18 +1,18 @@
 """Oversight & Learning Team - Risk Manager."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
-from ..base import CriticalAgent
-from ...config.prompts import RISK_MANAGER_PROMPT
 from ...config import settings
+from ...config.prompts import RISK_MANAGER_PROMPT
 from ...data.schemas import (
     AgentRole,
     RiskAssessment,
-    ExecutionPlan,
     StrategyProposal,
 )
 from ...utils import get_logger
+from ..base import CriticalAgent
+
 
 logger = get_logger(__name__)
 
@@ -20,46 +20,44 @@ logger = get_logger(__name__)
 class RiskManager(CriticalAgent):
     """
     Risk Manager agent.
-    
+
     Operates as independent oversight layer, assesses portfolio impact,
     and has veto authority over trades that violate risk parameters.
     """
-    
+
     def __init__(self):
         super().__init__(
             role=AgentRole.RISK_MANAGER,
             system_prompt=RISK_MANAGER_PROMPT,
             temperature=0.3,  # Low temperature for conservative risk assessment
         )
-    
-    async def assess_risk(self, context: Dict[str, Any]) -> RiskAssessment:
+
+    async def assess_risk(self, context: dict[str, Any]) -> RiskAssessment:
         """
         Assess risk of proposed trade.
-        
+
         Args:
             context: Contains strategy_proposal, execution_plan, portfolio_state
-            
+
         Returns:
             RiskAssessment with approval/rejection
         """
         symbol = context.get("symbol", "UNKNOWN")
         strategy_proposal: StrategyProposal = context.get("strategy_proposal")
-        execution_plan: ExecutionPlan = context.get("execution_plan")
         portfolio_state = context.get("portfolio_state", {})
-        
+
         logger.info("Assessing risk", symbol=symbol)
-        
+
         try:
             # Get portfolio metrics
             portfolio_value = portfolio_state.get("total_value", 100000.0)
-            current_positions = portfolio_state.get("positions", {})
             sector_exposures = portfolio_state.get("sector_exposures", {})
-            
+
             # Calculate position size check
             position_value = portfolio_value * strategy_proposal.position_size_pct
             max_position_value = portfolio_value * settings.max_position_size
             position_size_ok = position_value <= max_position_value
-            
+
             # Calculate VaR impact (simplified)
             # In production, would use proper VaR calculations
             estimated_var = abs(strategy_proposal.max_loss) / 100 * position_value
@@ -67,7 +65,7 @@ class RiskManager(CriticalAgent):
             projected_var = current_var + estimated_var
             var_limit = portfolio_value * settings.max_portfolio_risk
             var_ok = projected_var <= var_limit
-            
+
             # Check sector concentration (simplified)
             # Would need actual sector data in production
             sector = "Unknown"
@@ -75,7 +73,7 @@ class RiskManager(CriticalAgent):
             new_sector_exposure = current_sector_exposure + position_value
             sector_concentration = new_sector_exposure / portfolio_value
             sector_ok = sector_concentration <= settings.max_sector_concentration
-            
+
             # Compile risk warnings
             risk_warnings = []
             if not position_size_ok:
@@ -90,14 +88,16 @@ class RiskManager(CriticalAgent):
                 risk_warnings.append(
                     f"Sector concentration {sector_concentration*100:.1f}% exceeds {settings.max_sector_concentration*100:.0f}%"
                 )
-            
+
             # Additional qualitative risk assessment
             if strategy_proposal.confidence_score < 0.5:
                 risk_warnings.append("Low strategy confidence score")
-            
+
             if abs(strategy_proposal.max_loss) > 10:
-                risk_warnings.append(f"High maximum loss potential: {strategy_proposal.max_loss:.1f}%")
-            
+                risk_warnings.append(
+                    f"High maximum loss potential: {strategy_proposal.max_loss:.1f}%"
+                )
+
             # Construct input for LLM
             input_text = f"""
 Assess the risk of the proposed trade for {symbol}.
@@ -134,10 +134,10 @@ As Risk Manager, provide your assessment in JSON format:
 
 Note: You have VETO AUTHORITY. If risk parameters are violated or the risk is unacceptable, you MUST reject the trade.
 """
-            
+
             # Generate assessment
             response = await self._generate_response(input_text)
-            
+
             # Parse JSON response
             try:
                 if "```json" in response:
@@ -146,32 +146,35 @@ Note: You have VETO AUTHORITY. If risk parameters are violated or the risk is un
                     json_str = response.split("```")[1].split("```")[0].strip()
                 else:
                     json_str = response.strip()
-                
+
                 parsed = json.loads(json_str)
-                
+
                 llm_approved = parsed.get("approved", True)
                 risk_score = float(parsed.get("risk_score", 0.5))
                 recommendation = parsed.get("recommendation", "approve")
                 rationale = parsed.get("rationale", response[:200])
                 additional_warnings = parsed.get("additional_warnings", [])
-                
+
                 risk_warnings.extend(additional_warnings)
-                
+
             except (json.JSONDecodeError, KeyError, IndexError, ValueError) as e:
-                logger.warning("Failed to parse LLM response, using rule-based decision", error=str(e))
+                logger.warning(
+                    "Failed to parse LLM response, using rule-based decision",
+                    error=str(e),
+                )
                 llm_approved = True
                 risk_score = 0.5
                 recommendation = "approve"
                 rationale = "Rule-based assessment"
-            
+
             # Final decision: Must pass hard limits AND LLM approval
             hard_limits_passed = position_size_ok and var_ok and sector_ok
             final_approved = hard_limits_passed and llm_approved
-            
+
             if not hard_limits_passed:
                 recommendation = "reject"
                 rationale = "Hard risk limits violated"
-            
+
             # Calculate portfolio impact
             portfolio_impact = {
                 "position_value": position_value,
@@ -179,7 +182,7 @@ Note: You have VETO AUTHORITY. If risk parameters are violated or the risk is un
                 "var_increase": estimated_var,
                 "projected_var": projected_var,
             }
-            
+
             assessment = RiskAssessment(
                 symbol=symbol,
                 approved=final_approved,
@@ -191,19 +194,19 @@ Note: You have VETO AUTHORITY. If risk parameters are violated or the risk is un
                 risk_score=risk_score,
                 recommendation=f"{recommendation}: {rationale}",
             )
-            
+
             logger.info(
                 "Risk assessment complete",
                 symbol=symbol,
                 approved=final_approved,
                 risk_score=risk_score,
             )
-            
+
             return assessment
-            
+
         except Exception as e:
             logger.error("Risk assessment failed", symbol=symbol, error=str(e))
-            
+
             # Conservative default: reject on error
             return RiskAssessment(
                 symbol=symbol,

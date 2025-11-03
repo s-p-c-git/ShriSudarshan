@@ -1,42 +1,43 @@
 """Test configuration and fixtures for Project Shri Sudarshan."""
 
-import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, AsyncMock, MagicMock
-import pandas as pd
-from typing import Dict, Any
+import os
 
 # Import project modules
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, Mock
+
+import pandas as pd
+import pytest
+
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from src.data.schemas import (
     AgentRole,
-    Sentiment,
-    TrendDirection,
-    StrategyType,
-    TradeDirection,
-    OrderType,
-    OrderSide,
+    DebateArgument,
+    ExecutionPlan,
     FundamentalsReport,
     MacroNewsReport,
-    SentimentReport,
-    TechnicalReport,
-    DebateArgument,
-    StrategyProposal,
     Order,
-    ExecutionPlan,
-    RiskAssessment,
+    OrderSide,
+    OrderType,
     PortfolioDecision,
-    TradeOutcome,
-    Reflection,
+    RiskAssessment,
+    Sentiment,
+    SentimentReport,
+    StrategyProposal,
+    StrategyType,
+    TechnicalReport,
+    TradeDirection,
+    TrendDirection,
 )
 
 
 # ============================================================================
 # Basic Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def sample_symbol():
@@ -65,17 +66,21 @@ def sample_date_range():
 # Data Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def sample_price_history():
     """Sample price history DataFrame."""
-    dates = pd.date_range(end=datetime.now(), periods=100, freq='D')
-    return pd.DataFrame({
-        'Open': [150 + i * 0.5 for i in range(100)],
-        'High': [152 + i * 0.5 for i in range(100)],
-        'Low': [148 + i * 0.5 for i in range(100)],
-        'Close': [151 + i * 0.5 for i in range(100)],
-        'Volume': [1000000 + i * 10000 for i in range(100)],
-    }, index=dates)
+    dates = pd.date_range(end=datetime.now(), periods=100, freq="D")
+    return pd.DataFrame(
+        {
+            "Open": [150 + i * 0.5 for i in range(100)],
+            "High": [152 + i * 0.5 for i in range(100)],
+            "Low": [148 + i * 0.5 for i in range(100)],
+            "Close": [151 + i * 0.5 for i in range(100)],
+            "Volume": [1000000 + i * 10000 for i in range(100)],
+        },
+        index=dates,
+    )
 
 
 @pytest.fixture
@@ -153,6 +158,7 @@ def sample_news_articles():
 # Agent Report Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def sample_fundamentals_report(sample_symbol):
     """Sample fundamentals analyst report."""
@@ -218,7 +224,7 @@ def sample_analyst_reports(
     sample_fundamentals_report,
     sample_macro_news_report,
     sample_sentiment_report,
-    sample_technical_report
+    sample_technical_report,
 ):
     """Complete set of analyst reports."""
     return {
@@ -328,8 +334,11 @@ def sample_portfolio_decision(sample_symbol):
 # Mock Fixtures
 # ============================================================================
 
+
 @pytest.fixture
-def mock_market_data_provider(sample_price_history, sample_fundamentals, sample_technical_indicators):
+def mock_market_data_provider(
+    sample_price_history, sample_fundamentals, sample_technical_indicators
+):
     """Mock MarketDataProvider."""
     mock_provider = Mock()
     mock_provider.get_price_history.return_value = sample_price_history
@@ -375,6 +384,7 @@ def mock_llm():
 # Context Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def sample_context(sample_symbol, mock_market_data_provider, mock_news_provider):
     """Sample context for agent testing."""
@@ -408,6 +418,7 @@ def sample_workflow_state(sample_symbol, sample_analyst_reports):
 # ============================================================================
 # Configuration Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def test_env_vars(monkeypatch):

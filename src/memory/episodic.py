@@ -5,23 +5,25 @@ Episodic memory stores historical trades and their outcomes
 for learning and reflection.
 """
 
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from typing import Any, Optional
 
-from sqlalchemy import create_engine, Column, String, Float, DateTime, Text, JSON
+from sqlalchemy import JSON, Column, DateTime, Float, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from ..config import settings
-from ..data.schemas import TradeOutcome, Reflection
+from ..data.schemas import Reflection, TradeOutcome
+
 
 Base = declarative_base()
 
 
 class TradeRecord(Base):
     """Database model for trade records."""
+
     __tablename__ = "trades"
-    
+
     trade_id = Column(String, primary_key=True)
     symbol = Column(String, nullable=False)
     strategy_type = Column(String, nullable=False)
@@ -39,8 +41,9 @@ class TradeRecord(Base):
 
 class ReflectionRecord(Base):
     """Database model for reflection records."""
+
     __tablename__ = "reflections"
-    
+
     reflection_id = Column(String, primary_key=True)
     trade_id = Column(String, nullable=False)
     symbol = Column(String, nullable=False)
@@ -55,36 +58,36 @@ class ReflectionRecord(Base):
 class EpisodicMemory:
     """
     SQL database storage for historical trades and reflections.
-    
+
     Enables long-term learning through analysis of past decisions.
     """
-    
+
     def __init__(self, database_url: Optional[str] = None):
         """
         Initialize episodic memory.
-        
+
         Args:
             database_url: Database connection URL
         """
         self.database_url = database_url or settings.database_url
-        
+
         # Create engine
         self.engine = create_engine(self.database_url)
-        
+
         # Create tables
         Base.metadata.create_all(self.engine)
-        
+
         # Create session factory
         self.SessionLocal = sessionmaker(bind=self.engine)
-    
+
     def _get_session(self) -> Session:
         """Get a new database session."""
         return self.SessionLocal()
-    
+
     def store_trade(self, trade: TradeOutcome) -> None:
         """
         Store a trade outcome in episodic memory.
-        
+
         Args:
             trade: TradeOutcome object
         """
@@ -108,11 +111,11 @@ class EpisodicMemory:
             session.commit()
         finally:
             session.close()
-    
+
     def store_reflection(self, reflection: Reflection) -> None:
         """
         Store a reflection in episodic memory.
-        
+
         Args:
             reflection: Reflection object
         """
@@ -132,14 +135,14 @@ class EpisodicMemory:
             session.commit()
         finally:
             session.close()
-    
+
     def get_trade(self, trade_id: str) -> Optional[TradeOutcome]:
         """
         Retrieve a specific trade by ID.
-        
+
         Args:
             trade_id: Trade identifier
-            
+
         Returns:
             TradeOutcome or None if not found
         """
@@ -148,8 +151,9 @@ class EpisodicMemory:
             record = session.query(TradeRecord).filter_by(trade_id=trade_id).first()
             if not record:
                 return None
-            
+
             from ..data.schemas import StrategyType
+
             return TradeOutcome(
                 trade_id=record.trade_id,
                 symbol=record.symbol,
@@ -166,15 +170,15 @@ class EpisodicMemory:
             )
         finally:
             session.close()
-    
-    def get_trades_by_symbol(self, symbol: str, limit: int = 10) -> List[TradeOutcome]:
+
+    def get_trades_by_symbol(self, symbol: str, limit: int = 10) -> list[TradeOutcome]:
         """
         Get recent trades for a symbol.
-        
+
         Args:
             symbol: Stock symbol
             limit: Maximum number of trades to return
-            
+
         Returns:
             List of TradeOutcome objects
         """
@@ -187,8 +191,9 @@ class EpisodicMemory:
                 .limit(limit)
                 .all()
             )
-            
+
             from ..data.schemas import StrategyType
+
             return [
                 TradeOutcome(
                     trade_id=record.trade_id,
@@ -208,14 +213,14 @@ class EpisodicMemory:
             ]
         finally:
             session.close()
-    
-    def get_reflections_for_trade(self, trade_id: str) -> List[Reflection]:
+
+    def get_reflections_for_trade(self, trade_id: str) -> list[Reflection]:
         """
         Get all reflections for a specific trade.
-        
+
         Args:
             trade_id: Trade identifier
-            
+
         Returns:
             List of Reflection objects
         """
@@ -227,7 +232,7 @@ class EpisodicMemory:
                 .order_by(ReflectionRecord.created_at.desc())
                 .all()
             )
-            
+
             return [
                 Reflection(
                     trade_id=record.trade_id,
@@ -243,21 +248,23 @@ class EpisodicMemory:
             ]
         finally:
             session.close()
-    
-    def get_performance_statistics(self) -> Dict[str, Any]:
+
+    def get_performance_statistics(self) -> dict[str, Any]:
         """
         Get overall performance statistics.
-        
+
         Returns:
             Dictionary with performance metrics
         """
         session = self._get_session()
         try:
             total_trades = session.query(TradeRecord).count()
-            closed_trades = session.query(TradeRecord).filter(
-                TradeRecord.outcome.in_(["win", "loss", "breakeven"])
-            ).all()
-            
+            closed_trades = (
+                session.query(TradeRecord)
+                .filter(TradeRecord.outcome.in_(["win", "loss", "breakeven"]))
+                .all()
+            )
+
             if not closed_trades:
                 return {
                     "total_trades": total_trades,
@@ -266,21 +273,21 @@ class EpisodicMemory:
                     "avg_pnl": 0.0,
                     "total_pnl": 0.0,
                 }
-            
+
             profitable_trades = [t for t in closed_trades if t.realized_pnl and t.realized_pnl > 0]
             total_pnl = sum(t.realized_pnl for t in closed_trades if t.realized_pnl)
             avg_pnl = total_pnl / len(closed_trades) if closed_trades else 0.0
-            
+
             return {
                 "total_trades": total_trades,
                 "closed_trades": len(closed_trades),
-                "win_rate": len(profitable_trades) / len(closed_trades) if closed_trades else 0.0,
+                "win_rate": (len(profitable_trades) / len(closed_trades) if closed_trades else 0.0),
                 "avg_pnl": avg_pnl,
                 "total_pnl": total_pnl,
             }
         finally:
             session.close()
-    
+
     def __repr__(self) -> str:
         stats = self.get_performance_statistics()
         return f"EpisodicMemory(trades={stats['total_trades']}, win_rate={stats['win_rate']:.2%})"

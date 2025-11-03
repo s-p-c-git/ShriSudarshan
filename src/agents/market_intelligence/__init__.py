@@ -5,6 +5,7 @@ from .macro_news import MacroNewsAnalyst
 from .sentiment import SentimentAnalyst
 from .technical import TechnicalAnalyst
 
+
 __all__ = [
     "FundamentalsAnalyst",
     "MacroNewsAnalyst",

@@ -1,18 +1,19 @@
 """Strategy & Research Team - Derivatives Strategist."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
-from ..base import CriticalAgent
 from ...config.prompts import DERIVATIVES_STRATEGIST_PROMPT
+from ...data.providers import MarketDataProvider
 from ...data.schemas import (
     AgentRole,
+    Sentiment,
     StrategyProposal,
     StrategyType,
-    Sentiment,
 )
-from ...data.providers import MarketDataProvider
 from ...utils import get_logger
+from ..base import CriticalAgent
+
 
 logger = get_logger(__name__)
 
@@ -20,11 +21,11 @@ logger = get_logger(__name__)
 class DerivativesStrategist(CriticalAgent):
     """
     Derivatives Strategist (FnO Specialist) agent.
-    
+
     Analyzes options data and proposes specific FnO strategies based on
     the debate outcome.
     """
-    
+
     def __init__(self):
         super().__init__(
             role=AgentRole.DERIVATIVES_STRATEGIST,
@@ -32,52 +33,52 @@ class DerivativesStrategist(CriticalAgent):
             temperature=0.6,
         )
         self.market_data_provider = MarketDataProvider()
-    
-    async def formulate_strategy(self, context: Dict[str, Any]) -> StrategyProposal:
+
+    async def formulate_strategy(self, context: dict[str, Any]) -> StrategyProposal:
         """
         Formulate trading strategy based on debate outcome.
-        
+
         Args:
             context: Contains symbol, debate_arguments, analyst_reports
-            
+
         Returns:
             StrategyProposal with detailed strategy
         """
         symbol = context.get("symbol", "UNKNOWN")
         debate_arguments = context.get("debate_arguments", [])
         analyst_reports = context.get("analyst_reports", {})
-        
+
         # Use provided provider or default
         data_provider = context.get("market_data_provider", self.market_data_provider)
-        
+
         logger.info("Formulating strategy", symbol=symbol)
-        
+
         try:
             # Analyze debate outcome
             bullish_args = [arg for arg in debate_arguments if arg.position == Sentiment.BULLISH]
             bearish_args = [arg for arg in debate_arguments if arg.position == Sentiment.BEARISH]
-            
+
             # Determine overall sentiment from debate
             bullish_strength = len(bullish_args)
             bearish_strength = len(bearish_args)
-            
+
             if bullish_strength > bearish_strength:
                 overall_direction = Sentiment.BULLISH
             elif bearish_strength > bullish_strength:
                 overall_direction = Sentiment.BEARISH
             else:
                 overall_direction = Sentiment.NEUTRAL
-            
+
             # Get current price and options data
             current_price = data_provider.get_current_price(symbol)
-            
+
             try:
                 options_data = data_provider.get_options_chain(symbol)
                 has_options = len(options_data.get("calls", [])) > 0
-            except:
+            except Exception:
                 has_options = False
                 options_data = {}
-            
+
             # Prepare debate summary
             debate_summary = f"""
 Debate Outcome:
@@ -91,12 +92,12 @@ Latest Bullish Points:
 Latest Bearish Points:
 {bearish_args[-1].argument[:300] if bearish_args else 'None'}
 """
-            
+
             # Get technical levels for strike selection
             technical = analyst_reports.get("technical")
             support_levels = technical.support_levels if technical else []
             resistance_levels = technical.resistance_levels if technical else []
-            
+
             # Construct input for LLM
             input_text = f"""
 Formulate a trading strategy for {symbol} based on the debate outcome and analysis.
@@ -144,10 +145,10 @@ Provide your strategy in JSON format:
     "confidence_score": <0.0 to 1.0>
 }}
 """
-            
+
             # Generate strategy
             response = await self._generate_response(input_text)
-            
+
             # Parse JSON response
             try:
                 if "```json" in response:
@@ -156,19 +157,21 @@ Provide your strategy in JSON format:
                     json_str = response.split("```")[1].split("```")[0].strip()
                 else:
                     json_str = response.strip()
-                
+
                 parsed = json.loads(json_str)
-                
+
                 strategy_type_str = parsed.get("strategy_type", "LONG_EQUITY")
                 rationale = parsed.get("rationale", "Strategy based on analysis")
-                entry_conditions = parsed.get("entry_conditions", [f"Current price: ${current_price}"])
+                entry_conditions = parsed.get(
+                    "entry_conditions", [f"Current price: ${current_price}"]
+                )
                 exit_conditions = parsed.get("exit_conditions", ["Target reached or stop hit"])
                 position_size_pct = float(parsed.get("position_size_pct", 0.02))
                 expected_return = float(parsed.get("expected_return", 10.0))
                 max_loss = float(parsed.get("max_loss", -5.0))
                 time_horizon_days = int(parsed.get("time_horizon_days", 30))
                 confidence_score = float(parsed.get("confidence_score", 0.6))
-                
+
                 # Map strategy type string to enum
                 try:
                     strategy_type = StrategyType(strategy_type_str)
@@ -180,14 +183,14 @@ Provide your strategy in JSON format:
                         strategy_type = StrategyType.SHORT_EQUITY
                     else:
                         strategy_type = StrategyType.IRON_CONDOR
-                
+
                 # Clamp values
                 position_size_pct = max(0.001, min(0.05, position_size_pct))
                 confidence_score = max(0.0, min(1.0, confidence_score))
-                
+
             except (json.JSONDecodeError, KeyError, IndexError, ValueError) as e:
                 logger.warning("Failed to parse response, using defaults", error=str(e))
-                
+
                 # Default strategy based on direction
                 if overall_direction == Sentiment.BULLISH:
                     strategy_type = StrategyType.LONG_EQUITY
@@ -195,7 +198,7 @@ Provide your strategy in JSON format:
                     strategy_type = StrategyType.SHORT_EQUITY
                 else:
                     strategy_type = StrategyType.IRON_CONDOR
-                
+
                 rationale = response[:200]
                 entry_conditions = ["Market conditions favorable"]
                 exit_conditions = ["Target or stop reached"]
@@ -204,7 +207,7 @@ Provide your strategy in JSON format:
                 max_loss = -5.0
                 time_horizon_days = 30
                 confidence_score = 0.6
-            
+
             proposal = StrategyProposal(
                 symbol=symbol,
                 strategy_type=strategy_type,
@@ -219,7 +222,7 @@ Provide your strategy in JSON format:
                 confidence_score=confidence_score,
                 debate_summary=debate_summary,
             )
-            
+
             logger.info(
                 "Strategy formulated",
                 symbol=symbol,
@@ -227,12 +230,12 @@ Provide your strategy in JSON format:
                 direction=overall_direction.value,
                 confidence=confidence_score,
             )
-            
+
             return proposal
-            
+
         except Exception as e:
             logger.error("Strategy formulation failed", symbol=symbol, error=str(e))
-            
+
             # Return conservative default strategy
             return StrategyProposal(
                 symbol=symbol,

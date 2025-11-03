@@ -1,8 +1,9 @@
 """Strategy & Research Team agents."""
 
-from .bullish import BullishResearcher
 from .bearish import BearishResearcher
+from .bullish import BullishResearcher
 from .derivatives import DerivativesStrategist
+
 
 __all__ = [
     "BullishResearcher",
