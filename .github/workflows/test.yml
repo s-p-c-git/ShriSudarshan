@@ -31,9 +31,9 @@ jobs:
         pip install -e .
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
-    - name: Run tests with pytest
+    - name: Run unit tests with pytest
       run: |
-        pytest --verbose --cov=src --cov-report=xml --cov-report=term-missing
+        pytest --verbose --cov=src --cov-report=xml --cov-report=term-missing -m "not integration"
     
     - name: Upload coverage reports to Codecov
       if: matrix.python-version == '3.12'
@@ -45,3 +45,41 @@ jobs:
         fail_ci_if_error: false
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  
+  integration-anthropic:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Only run integration tests on Python 3.12 to avoid multiple API calls
+    strategy:
+      matrix:
+        python-version: ['3.12']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Run Anthropic integration tests
+      if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: |
+        pytest --verbose -m anthropic tests/test_integration_anthropic.py
+    
+    - name: Skip integration tests (no API key)
+      if: ${{ secrets.ANTHROPIC_API_KEY == '' }}
+      run: |
+        echo "⚠️ Anthropic integration tests skipped: ANTHROPIC_API_KEY secret not set"
+        echo "To enable integration tests, add ANTHROPIC_API_KEY to repository secrets"

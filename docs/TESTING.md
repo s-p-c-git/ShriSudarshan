@@ -267,9 +267,11 @@ Some integration tests are skipped by default because they require:
 - External service availability
 
 To run these tests:
-1. Set up environment variables (OPENAI_API_KEY, etc.)
-2. Remove `@pytest.mark.skip` decorator
-3. Run with network access
+1. Set up environment variables (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)
+2. Use pytest markers: `pytest -m integration` or `pytest -m anthropic`
+3. Ensure network access
+
+**See [INTEGRATION_TESTING.md](INTEGRATION_TESTING.md) for detailed instructions on running integration tests with Anthropic API.**
 
 ### Agent Tests
 Full agent testing requires:
@@ -278,6 +280,32 @@ Full agent testing requires:
 - Higher test execution time
 
 These are candidates for integration test suites.
+
+## Integration Tests
+
+### Anthropic API Integration
+The system includes integration tests for Anthropic Claude API that:
+- Validate real API connectivity
+- Test agent workflows with actual LLM responses
+- Run conditionally based on API key availability
+- Are designed for single successful runs to minimize costs
+
+**Key Features:**
+- 🔒 **Secure**: API keys never logged or exposed
+- ✅ **Conditional**: Skip automatically if no key available
+- 💰 **Cost-effective**: Single run per test session
+- 🚀 **CI-ready**: GitHub Actions integration with secrets
+
+**To run Anthropic integration tests:**
+```bash
+# Set API key
+export ANTHROPIC_API_KEY="sk-ant-your-key"
+
+# Run integration tests
+pytest -m anthropic
+```
+
+**For complete integration testing guide**, see [INTEGRATION_TESTING.md](INTEGRATION_TESTING.md)
 
 ## Future Enhancements
 
