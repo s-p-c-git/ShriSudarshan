@@ -153,9 +153,12 @@ class BaseAgent(ABC):
         Returns:
             Dict with agent metadata
         """
+        # Handle different attribute names for different LLM providers
+        model_name = getattr(self.llm, "model_name", None) or getattr(self.llm, "model", "unknown")
+        
         return {
             "role": self.role.value,
-            "model": self.llm.model_name,
+            "model": model_name,
             "temperature": self.temperature,
             "timestamp": datetime.now().isoformat(),
         }
