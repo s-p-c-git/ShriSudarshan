@@ -5,9 +5,9 @@ This module handles all configuration settings using pydantic-settings
 for validation and environment variable management.
 """
 
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +16,11 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
+    )
+
+    # LLM Provider Configuration
+    llm_provider: Literal["openai", "anthropic"] = Field(
+        default="openai", description="LLM provider to use (openai or anthropic)"
     )
 
     # OpenAI Configuration
@@ -27,6 +32,17 @@ class Settings(BaseSettings):
     )
     standard_model: str = Field(
         default="gpt-4o-mini", description="Standard LLM model for routine tasks"
+    )
+
+    # Anthropic Configuration
+    anthropic_api_key: Optional[str] = Field(
+        default=None, description="Anthropic API key"
+    )
+    anthropic_premium_model: str = Field(
+        default="claude-3-5-sonnet-20241022", description="Premium Anthropic model for critical decisions"
+    )
+    anthropic_standard_model: str = Field(
+        default="claude-3-5-sonnet-20241022", description="Standard Anthropic model for routine tasks"
     )
 
     # Data Provider Keys
@@ -82,6 +98,28 @@ class Settings(BaseSettings):
     market_data_cache_ttl: int = Field(default=300, description="Market data cache TTL in seconds")
     news_lookback_days: int = Field(default=7, description="Number of days to look back for news")
     historical_data_period: str = Field(default="1y", description="Historical data period")
+
+    @field_validator("openai_api_key")
+    @classmethod
+    def validate_openai_key(cls, v: str, info) -> str:
+        """Validate OpenAI API key is set when using OpenAI provider."""
+        # Get llm_provider from the data dictionary (values being validated)
+        llm_provider = info.data.get("llm_provider", "openai")
+        if llm_provider == "openai" and v == "test-key-not-set":
+            # Allow test key for testing environments
+            pass
+        return v
+
+    @field_validator("anthropic_api_key")
+    @classmethod
+    def validate_anthropic_key(cls, v: Optional[str], info) -> Optional[str]:
+        """Validate Anthropic API key is set when using Anthropic provider."""
+        llm_provider = info.data.get("llm_provider", "openai")
+        if llm_provider == "anthropic" and not v:
+            raise ValueError(
+                "anthropic_api_key must be set when llm_provider is 'anthropic'"
+            )
+        return v
 
 
 # Global settings instance

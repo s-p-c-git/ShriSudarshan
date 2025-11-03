@@ -47,7 +47,10 @@ The system operates in a structured, sequential workflow managed by LangGraph to
  * Learning Loop: The trade's outcome is logged in the system's "episodic memory." The Reflective Agent periodically analyzes these logs to generate strategic feedback, completing the learning cycle.
 4. Development Plan & Technology Stack
  * Core Framework: LangGraph for orchestrating agent teams and managing complex state transitions.
- * LLMs: A dual-model approach is optimal. Use faster, cost-effective models (e.g., gpt-4o-mini) for routine data processing and more powerful models (e.g., o1-preview, gpt-4o) for the critical debate, strategy, and management functions.
+ * LLMs: A dual-model approach is optimal. The system supports multiple LLM providers:
+   * **OpenAI**: Use faster, cost-effective models (e.g., gpt-4o-mini) for routine data processing and more powerful models (e.g., gpt-4o) for critical debate, strategy, and management functions.
+   * **Anthropic**: Use Claude 3.5 Sonnet for both routine and critical tasks. Claude offers competitive performance with different pricing and capabilities.
+   * The system allows flexible provider selection via configuration, enabling users to choose based on cost, performance, or API availability.
  * Data Feeds:
    * Stocks: Standard providers like Alpha Vantage or yfinance for pricing, fundamentals, and news.
    * FnO: A specialized data provider is required for real-time options chain data, implied volatility surfaces, and greeks.
@@ -59,7 +62,9 @@ The system operates in a structured, sequential workflow managed by LangGraph to
 5. Getting Started
 Prerequisites
  * Python 3.9+
- * An OpenAI API key (or other LLM provider)
+ * An LLM provider API key:
+   * **OpenAI API key** (for GPT-4o, GPT-4o-mini), OR
+   * **Anthropic API key** (for Claude 3.5 Sonnet)
  * API keys for your chosen data vendors (e.g., Alpha Vantage)
 Installation
  * Clone the repository:
@@ -71,7 +76,32 @@ Installation
 
  * Configure your API keys:
    * Rename .env.example to .env.
-   * Add your API keys to the .env file.
+   * Add your LLM provider API key(s) to the .env file:
+     * For **OpenAI**: Set `OPENAI_API_KEY` and `LLM_PROVIDER=openai` (default)
+     * For **Anthropic**: Set `ANTHROPIC_API_KEY` and `LLM_PROVIDER=anthropic`
+   * Add your data provider API keys (e.g., Alpha Vantage)
+
+LLM Provider Configuration
+The system supports multiple LLM providers with flexible configuration:
+
+**Using OpenAI (Default)**:
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your_openai_api_key_here
+PREMIUM_MODEL=gpt-4o
+STANDARD_MODEL=gpt-4o-mini
+```
+
+**Using Anthropic Claude**:
+```bash
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_PREMIUM_MODEL=claude-3-5-sonnet-20241022
+ANTHROPIC_STANDARD_MODEL=claude-3-5-sonnet-20241022
+```
+
+**Mixed Mode**: You can also use different providers for different agents by specifying the provider when initializing agents in code.
+
 Running the System
    cd src
    python main.py --symbol AAPL --start_date 2023-01-01 --end_date 2023-01-31
