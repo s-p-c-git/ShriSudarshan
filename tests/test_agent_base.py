@@ -231,13 +231,13 @@ async def test_base_agent_generate_response():
 
         agent = MockAgent(role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt")
 
-        # Mock the LLM with AsyncMock
-        with patch.object(agent, "llm") as mock_llm:
-            mock_response = Mock()
-            mock_response.content = "Test response"
-            # Use AsyncMock for ainvoke
-            mock_llm.ainvoke = AsyncMock(return_value=mock_response)
-
+        # Mock the LLM with AsyncMock for ainvoke method
+        mock_response = Mock()
+        mock_response.content = "Test response"
+        mock_llm = Mock()
+        mock_llm.ainvoke = AsyncMock(return_value=mock_response)
+        
+        with patch.object(agent, "llm", new=mock_llm):
             response = await agent._generate_response("test input")
 
             assert response == "Test response"
