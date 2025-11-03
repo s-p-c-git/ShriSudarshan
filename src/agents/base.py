@@ -54,9 +54,7 @@ def create_llm(
             model_name = settings.anthropic_standard_model
 
         if not settings.anthropic_api_key:
-            raise ValueError(
-                "anthropic_api_key must be set when using Anthropic provider"
-            )
+            raise ValueError("anthropic_api_key must be set when using Anthropic provider")
 
         return ChatAnthropic(
             model=model_name,
@@ -155,7 +153,7 @@ class BaseAgent(ABC):
         """
         # Handle different attribute names for different LLM providers
         model_name = getattr(self.llm, "model_name", None) or getattr(self.llm, "model", "unknown")
-        
+
         return {
             "role": self.role.value,
             "model": model_name,

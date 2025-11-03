@@ -113,19 +113,14 @@ def test_create_llm_explicit_provider_override():
 
 def test_settings_default_provider():
     """Test that default provider is OpenAI."""
-    settings = Settings(
-        _env_file=None,  # Don't load from file
-        openai_api_key="test-key"
-    )
+    settings = Settings(_env_file=None, openai_api_key="test-key")  # Don't load from file
     assert settings.llm_provider == "openai"
 
 
 def test_settings_anthropic_provider():
     """Test Anthropic provider configuration."""
     settings = Settings(
-        _env_file=None,
-        llm_provider="anthropic",
-        anthropic_api_key="test-anthropic-key"
+        _env_file=None, llm_provider="anthropic", anthropic_api_key="test-anthropic-key"
     )
     assert settings.llm_provider == "anthropic"
     assert settings.anthropic_api_key == "test-anthropic-key"
@@ -134,11 +129,7 @@ def test_settings_anthropic_provider():
 def test_settings_anthropic_without_key_fails():
     """Test that using Anthropic without API key raises validation error."""
     with pytest.raises(ValueError, match="anthropic_api_key must be set"):
-        Settings(
-            _env_file=None,
-            llm_provider="anthropic",
-            openai_api_key="test-key"
-        )
+        Settings(_env_file=None, llm_provider="anthropic", openai_api_key="test-key")
 
 
 def test_settings_anthropic_models():
@@ -148,7 +139,7 @@ def test_settings_anthropic_models():
         llm_provider="anthropic",
         anthropic_api_key="test-key",
         anthropic_premium_model="claude-3-5-sonnet-20241022",
-        anthropic_standard_model="claude-3-5-sonnet-20241022"
+        anthropic_standard_model="claude-3-5-sonnet-20241022",
     )
     assert settings.anthropic_premium_model == "claude-3-5-sonnet-20241022"
     assert settings.anthropic_standard_model == "claude-3-5-sonnet-20241022"
@@ -189,10 +180,7 @@ def test_base_agent_openai_initialization():
         mock_settings.standard_model = "gpt-4o-mini"
         mock_settings.openai_api_key = "test-key"
 
-        agent = TestAgent(
-            role=AgentRole.FUNDAMENTALS_ANALYST,
-            system_prompt="Test prompt"
-        )
+        agent = TestAgent(role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt")
 
         assert agent.role == AgentRole.FUNDAMENTALS_ANALYST
         assert agent.system_prompt == "Test prompt"
@@ -207,10 +195,7 @@ def test_base_agent_anthropic_initialization():
         mock_settings.anthropic_standard_model = "claude-3-5-sonnet-20241022"
         mock_settings.anthropic_api_key = "test-anthropic-key"
 
-        agent = TestAgent(
-            role=AgentRole.FUNDAMENTALS_ANALYST,
-            system_prompt="Test prompt"
-        )
+        agent = TestAgent(role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt")
 
         assert agent.role == AgentRole.FUNDAMENTALS_ANALYST
         assert agent.provider == "anthropic"
@@ -226,9 +211,7 @@ def test_base_agent_explicit_provider():
 
         # Force use of Anthropic
         agent = TestAgent(
-            role=AgentRole.FUNDAMENTALS_ANALYST,
-            system_prompt="Test prompt",
-            provider="anthropic"
+            role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt", provider="anthropic"
         )
 
         assert agent.provider == "anthropic"
@@ -243,10 +226,7 @@ async def test_base_agent_generate_response():
         mock_settings.standard_model = "gpt-4o-mini"
         mock_settings.openai_api_key = "test-key"
 
-        agent = TestAgent(
-            role=AgentRole.FUNDAMENTALS_ANALYST,
-            system_prompt="Test prompt"
-        )
+        agent = TestAgent(role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt")
 
         # Mock the LLM
         with patch.object(agent, "llm") as mock_llm:
@@ -267,10 +247,7 @@ def test_base_agent_get_metadata():
         mock_settings.standard_model = "gpt-4o-mini"
         mock_settings.openai_api_key = "test-key"
 
-        agent = TestAgent(
-            role=AgentRole.FUNDAMENTALS_ANALYST,
-            system_prompt="Test prompt"
-        )
+        agent = TestAgent(role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt")
 
         metadata = agent.get_metadata()
 
@@ -305,10 +282,7 @@ def test_critical_agent_openai_uses_premium():
         mock_settings.premium_model = "gpt-4o"
         mock_settings.openai_api_key = "test-key"
 
-        agent = TestCriticalAgent(
-            role=AgentRole.PORTFOLIO_MANAGER,
-            system_prompt="Critical prompt"
-        )
+        agent = TestCriticalAgent(role=AgentRole.PORTFOLIO_MANAGER, system_prompt="Critical prompt")
 
         assert isinstance(agent.llm, ChatOpenAI)
         assert agent.llm.model_name == "gpt-4o"
@@ -321,10 +295,7 @@ def test_critical_agent_anthropic_uses_premium():
         mock_settings.anthropic_premium_model = "claude-3-5-sonnet-20241022"
         mock_settings.anthropic_api_key = "test-anthropic-key"
 
-        agent = TestCriticalAgent(
-            role=AgentRole.PORTFOLIO_MANAGER,
-            system_prompt="Critical prompt"
-        )
+        agent = TestCriticalAgent(role=AgentRole.PORTFOLIO_MANAGER, system_prompt="Critical prompt")
 
         assert isinstance(agent.llm, ChatAnthropic)
         assert agent.llm.model == "claude-3-5-sonnet-20241022"
@@ -340,9 +311,7 @@ def test_critical_agent_explicit_provider():
 
         # Force use of Anthropic
         agent = TestCriticalAgent(
-            role=AgentRole.PORTFOLIO_MANAGER,
-            system_prompt="Critical prompt",
-            provider="anthropic"
+            role=AgentRole.PORTFOLIO_MANAGER, system_prompt="Critical prompt", provider="anthropic"
         )
 
         assert agent.provider == "anthropic"
@@ -366,23 +335,16 @@ def test_mixed_providers_same_workflow():
         mock_settings.anthropic_api_key = "test-anthropic-key"
 
         # Create agent with default provider (OpenAI)
-        agent1 = TestAgent(
-            role=AgentRole.FUNDAMENTALS_ANALYST,
-            system_prompt="Test prompt 1"
-        )
+        agent1 = TestAgent(role=AgentRole.FUNDAMENTALS_ANALYST, system_prompt="Test prompt 1")
 
         # Create agent explicitly using Anthropic
         agent2 = TestAgent(
-            role=AgentRole.TECHNICAL_ANALYST,
-            system_prompt="Test prompt 2",
-            provider="anthropic"
+            role=AgentRole.TECHNICAL_ANALYST, system_prompt="Test prompt 2", provider="anthropic"
         )
 
         # Create critical agent with Anthropic
         agent3 = TestCriticalAgent(
-            role=AgentRole.PORTFOLIO_MANAGER,
-            system_prompt="Critical prompt",
-            provider="anthropic"
+            role=AgentRole.PORTFOLIO_MANAGER, system_prompt="Critical prompt", provider="anthropic"
         )
 
         assert isinstance(agent1.llm, ChatOpenAI)

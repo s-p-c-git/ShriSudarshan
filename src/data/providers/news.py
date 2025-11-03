@@ -15,15 +15,47 @@ class NewsProvider:
 
     # Keyword lists for sentiment analysis
     POSITIVE_KEYWORDS = [
-        "surge", "rally", "gain", "profit", "beat", "strong", "growth",
-        "positive", "bullish", "upside", "outperform", "upgrade", "excellent",
-        "success", "record", "breakthrough", "innovation", "expand", "increase"
+        "surge",
+        "rally",
+        "gain",
+        "profit",
+        "beat",
+        "strong",
+        "growth",
+        "positive",
+        "bullish",
+        "upside",
+        "outperform",
+        "upgrade",
+        "excellent",
+        "success",
+        "record",
+        "breakthrough",
+        "innovation",
+        "expand",
+        "increase",
     ]
 
     NEGATIVE_KEYWORDS = [
-        "plummet", "fall", "loss", "miss", "weak", "decline", "negative",
-        "bearish", "downside", "underperform", "downgrade", "poor", "concern",
-        "risk", "uncertainty", "cut", "reduce", "problem", "crisis"
+        "plummet",
+        "fall",
+        "loss",
+        "miss",
+        "weak",
+        "decline",
+        "negative",
+        "bearish",
+        "downside",
+        "underperform",
+        "downgrade",
+        "poor",
+        "concern",
+        "risk",
+        "uncertainty",
+        "cut",
+        "reduce",
+        "problem",
+        "crisis",
     ]
 
     def __init__(self):
@@ -116,9 +148,7 @@ class NewsProvider:
             logger.error("Failed to get company news", symbol=symbol, error=str(e))
             return []
 
-    def get_market_news(
-        self, days_back: int = 7, max_articles: int = 20
-    ) -> List[Dict[str, Any]]:
+    def get_market_news(self, days_back: int = 7, max_articles: int = 20) -> List[Dict[str, Any]]:
         """
         Get general market news.
 
@@ -185,9 +215,7 @@ class NewsProvider:
             logger.error("Failed to get market news", error=str(e))
             return []
 
-    def aggregate_sentiment(
-        self, symbol: str, days_back: int = 7
-    ) -> Dict[str, Any]:
+    def aggregate_sentiment(self, symbol: str, days_back: int = 7) -> Dict[str, Any]:
         """
         Aggregate sentiment from recent news.
 
@@ -285,39 +313,47 @@ class NewsProvider:
         while current_date <= end_date:
             # Weekly unemployment claims (Thursdays)
             if current_date.weekday() == 3:  # Thursday
-                events.append({
-                    "name": "Initial Jobless Claims",
-                    "date": current_date,
-                    "importance": "medium",
-                    "description": "Weekly unemployment insurance claims",
-                })
+                events.append(
+                    {
+                        "name": "Initial Jobless Claims",
+                        "date": current_date,
+                        "importance": "medium",
+                        "description": "Weekly unemployment insurance claims",
+                    }
+                )
 
             # Monthly CPI (mid-month)
             if current_date.day == 15:
-                events.append({
-                    "name": "Consumer Price Index (CPI)",
-                    "date": current_date,
-                    "importance": "high",
-                    "description": "Monthly inflation data",
-                })
+                events.append(
+                    {
+                        "name": "Consumer Price Index (CPI)",
+                        "date": current_date,
+                        "importance": "high",
+                        "description": "Monthly inflation data",
+                    }
+                )
 
             # Monthly jobs report (first Friday)
             if current_date.weekday() == 4 and 1 <= current_date.day <= 7:
-                events.append({
-                    "name": "Non-Farm Payrolls",
-                    "date": current_date,
-                    "importance": "high",
-                    "description": "Monthly employment report",
-                })
+                events.append(
+                    {
+                        "name": "Non-Farm Payrolls",
+                        "date": current_date,
+                        "importance": "high",
+                        "description": "Monthly employment report",
+                    }
+                )
 
             # FOMC meetings (quarterly, approximate)
             if current_date.day in [15, 16] and current_date.month in [3, 6, 9, 12]:
-                events.append({
-                    "name": "FOMC Meeting",
-                    "date": current_date,
-                    "importance": "high",
-                    "description": "Federal Reserve monetary policy meeting",
-                })
+                events.append(
+                    {
+                        "name": "FOMC Meeting",
+                        "date": current_date,
+                        "importance": "high",
+                        "description": "Federal Reserve monetary policy meeting",
+                    }
+                )
 
             current_date += timedelta(days=1)
 

@@ -24,9 +24,7 @@ class Settings(BaseSettings):
     )
 
     # OpenAI Configuration
-    openai_api_key: str = Field(
-        default="test-key-not-set", description="OpenAI API key"
-    )
+    openai_api_key: str = Field(default="test-key-not-set", description="OpenAI API key")
     premium_model: str = Field(
         default="gpt-4o", description="Premium LLM model for critical decisions"
     )
@@ -35,14 +33,14 @@ class Settings(BaseSettings):
     )
 
     # Anthropic Configuration
-    anthropic_api_key: Optional[str] = Field(
-        default=None, description="Anthropic API key"
-    )
+    anthropic_api_key: Optional[str] = Field(default=None, description="Anthropic API key")
     anthropic_premium_model: str = Field(
-        default="claude-3-5-sonnet-20241022", description="Premium Anthropic model for critical decisions"
+        default="claude-3-5-sonnet-20241022",
+        description="Premium Anthropic model for critical decisions",
     )
     anthropic_standard_model: str = Field(
-        default="claude-3-5-sonnet-20241022", description="Standard Anthropic model for routine tasks"
+        default="claude-3-5-sonnet-20241022",
+        description="Standard Anthropic model for routine tasks",
     )
 
     # Data Provider Keys
@@ -116,9 +114,7 @@ class Settings(BaseSettings):
         """Validate Anthropic API key is set when using Anthropic provider."""
         llm_provider = info.data.get("llm_provider", "openai")
         if llm_provider == "anthropic" and not v:
-            raise ValueError(
-                "anthropic_api_key must be set when llm_provider is 'anthropic'"
-            )
+            raise ValueError("anthropic_api_key must be set when llm_provider is 'anthropic'")
         return v
 
 

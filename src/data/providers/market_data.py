@@ -145,9 +145,7 @@ class MarketDataProvider:
             return statements
 
         except Exception as e:
-            logger.error(
-                "Failed to get financial statements", symbol=symbol, error=str(e)
-            )
+            logger.error("Failed to get financial statements", symbol=symbol, error=str(e))
             return {
                 "income_statement": pd.DataFrame(),
                 "balance_sheet": pd.DataFrame(),
@@ -157,9 +155,7 @@ class MarketDataProvider:
                 "quarterly_cash_flow": pd.DataFrame(),
             }
 
-    def get_options_chain(
-        self, symbol: str, expiry_date: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def get_options_chain(self, symbol: str, expiry_date: Optional[str] = None) -> Dict[str, Any]:
         """
         Get options chain for a symbol.
 
@@ -236,9 +232,7 @@ class MarketDataProvider:
             history = self.get_price_history(symbol, period="1y", interval="1d")
 
             if history.empty or len(history) < 50:
-                logger.warning(
-                    "Insufficient data for indicators", symbol=symbol, rows=len(history)
-                )
+                logger.warning("Insufficient data for indicators", symbol=symbol, rows=len(history))
                 return {
                     "sma_20": None,
                     "sma_50": None,
@@ -276,7 +270,10 @@ class MarketDataProvider:
             signal_line = None
             histogram = None
             if ema_12 is not None and ema_26 is not None:
-                macd_series = close.ewm(span=12, adjust=False).mean() - close.ewm(span=26, adjust=False).mean()
+                macd_series = (
+                    close.ewm(span=12, adjust=False).mean()
+                    - close.ewm(span=26, adjust=False).mean()
+                )
                 macd_line = macd_series.iloc[-1]
                 signal_series = macd_series.ewm(span=9, adjust=False).mean()
                 signal_line = signal_series.iloc[-1]
@@ -314,9 +311,7 @@ class MarketDataProvider:
             return indicators
 
         except Exception as e:
-            logger.error(
-                "Failed to calculate indicators", symbol=symbol, error=str(e)
-            )
+            logger.error("Failed to calculate indicators", symbol=symbol, error=str(e))
             return {}
 
     def _calculate_rsi(self, prices: pd.Series, period: int = 14) -> Optional[float]:
