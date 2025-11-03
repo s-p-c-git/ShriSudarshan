@@ -432,3 +432,92 @@ def test_env_vars(monkeypatch):
     monkeypatch.setenv("MAX_PORTFOLIO_RISK", "0.02")
     monkeypatch.setenv("ENABLE_CONCURRENT_ANALYSIS", "false")
     monkeypatch.setenv("MAX_DEBATE_ROUNDS", "2")
+
+
+# ============================================================================
+# Mock Agent Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def mock_fundamentals_analyst():
+    """Mock FundamentalsAnalyst for testing."""
+    from tests.mock_agents import MockFundamentalsAnalyst
+    return MockFundamentalsAnalyst()
+
+
+@pytest.fixture
+def mock_technical_analyst():
+    """Mock TechnicalAnalyst for testing."""
+    from tests.mock_agents import MockTechnicalAnalyst
+    return MockTechnicalAnalyst()
+
+
+@pytest.fixture
+def mock_sentiment_analyst():
+    """Mock SentimentAnalyst for testing."""
+    from tests.mock_agents import MockSentimentAnalyst
+    return MockSentimentAnalyst()
+
+
+@pytest.fixture
+def mock_macro_news_analyst():
+    """Mock MacroNewsAnalyst for testing."""
+    from tests.mock_agents import MockMacroNewsAnalyst
+    return MockMacroNewsAnalyst()
+
+
+@pytest.fixture
+def mock_bullish_researcher():
+    """Mock BullishResearcher for testing."""
+    from tests.mock_agents import MockBullishResearcher
+    return MockBullishResearcher()
+
+
+@pytest.fixture
+def mock_bearish_researcher():
+    """Mock BearishResearcher for testing."""
+    from tests.mock_agents import MockBearishResearcher
+    return MockBearishResearcher()
+
+
+@pytest.fixture
+def mock_derivatives_strategist():
+    """Mock DerivativesStrategist for testing."""
+    from tests.mock_agents import MockDerivativesStrategist
+    return MockDerivativesStrategist()
+
+
+@pytest.fixture
+def mock_equity_trader():
+    """Mock EquityTrader for testing."""
+    from tests.mock_agents import MockEquityTrader
+    return MockEquityTrader()
+
+
+@pytest.fixture
+def mock_fno_trader():
+    """Mock FnOTrader for testing."""
+    from tests.mock_agents import MockFnOTrader
+    return MockFnOTrader()
+
+
+@pytest.fixture
+def mock_risk_manager():
+    """Mock RiskManager for testing."""
+    from tests.mock_agents import MockRiskManager
+    return MockRiskManager()
+
+
+@pytest.fixture
+def mock_portfolio_manager():
+    """Mock PortfolioManager for testing."""
+    from tests.mock_agents import MockPortfolioManager
+    return MockPortfolioManager()
+
+
+@pytest.fixture
+def mock_reflective_agent():
+    """Mock ReflectiveAgent for testing."""
+    from tests.mock_agents import MockReflectiveAgent
+    return MockReflectiveAgent()
