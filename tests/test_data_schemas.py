@@ -1,6 +1,6 @@
 """Unit tests for data schemas."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
@@ -426,7 +426,7 @@ class TestTradeOutcome:
     def test_completed_outcome(self):
         """Test creating a completed trade outcome."""
         entry_date = datetime.now()
-        exit_date = entry_date + datetime.timedelta(days=30)
+        exit_date = entry_date + timedelta(days=30)
 
         outcome = TradeOutcome(
             trade_id="TRADE-001",
