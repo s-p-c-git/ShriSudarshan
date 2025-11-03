@@ -11,7 +11,6 @@ from typing import Any, Optional
 
 try:
     import chromadb
-    from chromadb.config import Settings
 
     CHROMA_AVAILABLE = True
 except ImportError:
@@ -41,12 +40,9 @@ class ProceduralMemory:
             return
 
         try:
-            # Initialize ChromaDB client
-            self.client = chromadb.Client(
-                Settings(
-                    persist_directory=persist_directory,
-                    anonymized_telemetry=False,
-                )
+            # Initialize ChromaDB client (ChromaDB 0.4.0+)
+            self.client = chromadb.PersistentClient(
+                path=persist_directory,
             )
 
             # Get or create collection

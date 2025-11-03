@@ -9,8 +9,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from sqlalchemy import JSON, Column, DateTime, Float, String, Text, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker, declarative_base
 
 from ..config import settings
 from ..data.schemas import Reflection, TradeOutcome
@@ -93,10 +92,18 @@ class EpisodicMemory:
         """
         session = self._get_session()
         try:
+            # Handle both string and enum types for strategy_type
+            # Pydantic's use_enum_values=True converts enums to strings
+            strategy_type_value = (
+                trade.strategy_type 
+                if isinstance(trade.strategy_type, str) 
+                else trade.strategy_type.value
+            )
+            
             record = TradeRecord(
                 trade_id=trade.trade_id,
                 symbol=trade.symbol,
-                strategy_type=trade.strategy_type.value,
+                strategy_type=strategy_type_value,
                 entry_date=trade.entry_date,
                 exit_date=trade.exit_date,
                 entry_price=trade.entry_price,
