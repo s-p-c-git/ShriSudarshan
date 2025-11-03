@@ -23,7 +23,6 @@ import pytest
 # Import after setting env vars
 from src.agents.base import create_llm
 from src.config.settings import Settings
-from src.data.schemas import AgentRole
 
 
 def get_anthropic_key() -> Optional[str]:
