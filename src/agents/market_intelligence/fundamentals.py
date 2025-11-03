@@ -1,13 +1,14 @@
 """Market Intelligence Team - Fundamentals Analyst."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
-from ..base import BaseAgent
 from ...config.prompts import FUNDAMENTALS_ANALYST_PROMPT
-from ...data.schemas import AgentRole, FundamentalsReport, Sentiment
 from ...data.providers import MarketDataProvider
+from ...data.schemas import AgentRole, FundamentalsReport, Sentiment
 from ...utils import get_logger
+from ..base import BaseAgent
+
 
 logger = get_logger(__name__)
 
@@ -15,11 +16,11 @@ logger = get_logger(__name__)
 class FundamentalsAnalyst(BaseAgent):
     """
     Fundamentals Analyst agent.
-    
+
     Analyzes financial reports, earnings transcripts, and balance sheets
     to determine intrinsic value of assets.
     """
-    
+
     def __init__(self):
         super().__init__(
             role=AgentRole.FUNDAMENTALS_ANALYST,
@@ -27,32 +28,32 @@ class FundamentalsAnalyst(BaseAgent):
             temperature=0.5,  # Lower temperature for factual analysis
         )
         self.data_provider = MarketDataProvider()
-    
-    async def analyze(self, context: Dict[str, Any]) -> FundamentalsReport:
+
+    async def analyze(self, context: dict[str, Any]) -> FundamentalsReport:
         """
         Analyze fundamental data for a symbol.
-        
+
         Args:
             context: Contains 'symbol', 'market_data_provider' (optional)
-            
+
         Returns:
             FundamentalsReport with analysis
         """
         symbol = context.get("symbol", "UNKNOWN")
-        
+
         # Use provided data provider or default
         data_provider = context.get("market_data_provider", self.data_provider)
-        
+
         logger.info("Starting fundamental analysis", symbol=symbol)
-        
+
         try:
             # Fetch fundamental data
             fundamentals = data_provider.get_fundamentals(symbol)
             info = data_provider.get_info(symbol)
-            
+
             # Get current price for valuation
             current_price = data_provider.get_current_price(symbol)
-            
+
             # Construct detailed input for LLM
             input_text = f"""
 Analyze the fundamental data for {symbol} and provide a comprehensive investment analysis.
@@ -107,10 +108,10 @@ Please provide your analysis in the following JSON format:
     "analysis_summary": "brief summary of your analysis"
 }}
 """
-            
+
             # Generate analysis
             response = await self._generate_response(input_text)
-            
+
             # Try to parse JSON response
             try:
                 # Extract JSON from response (handle markdown code blocks)
@@ -120,9 +121,9 @@ Please provide your analysis in the following JSON format:
                     json_str = response.split("```")[1].split("```")[0].strip()
                 else:
                     json_str = response.strip()
-                
+
                 parsed = json.loads(json_str)
-                
+
                 # Extract fields with defaults
                 key_points = parsed.get("key_points", [])
                 intrinsic_value = parsed.get("intrinsic_value_estimate")
@@ -130,7 +131,7 @@ Please provide your analysis in the following JSON format:
                 risk_factors = parsed.get("risk_factors", [])
                 confidence_level = parsed.get("confidence_level", 5)
                 analysis_summary = parsed.get("analysis_summary", response[:500])
-                
+
                 # Map investment thesis to Sentiment enum
                 if investment_thesis_str in ["bullish", "buy", "positive"]:
                     investment_thesis = Sentiment.BULLISH
@@ -138,7 +139,7 @@ Please provide your analysis in the following JSON format:
                     investment_thesis = Sentiment.BEARISH
                 else:
                     investment_thesis = Sentiment.NEUTRAL
-                
+
             except (json.JSONDecodeError, KeyError, IndexError) as e:
                 logger.warning("Failed to parse LLM response as JSON, using defaults", error=str(e))
                 key_points = ["Analysis pending - parsing error"]
@@ -147,7 +148,7 @@ Please provide your analysis in the following JSON format:
                 risk_factors = ["Unable to parse detailed analysis"]
                 confidence_level = 5
                 analysis_summary = response[:500]
-            
+
             report = FundamentalsReport(
                 symbol=symbol,
                 confidence_level=confidence_level,
@@ -158,19 +159,19 @@ Please provide your analysis in the following JSON format:
                 investment_thesis=investment_thesis,
                 risk_factors=risk_factors,
             )
-            
+
             logger.info(
                 "Fundamental analysis complete",
                 symbol=symbol,
                 thesis=investment_thesis.value,
                 confidence=confidence_level,
             )
-            
+
             return report
-            
+
         except Exception as e:
             logger.error("Fundamental analysis failed", symbol=symbol, error=str(e))
-            
+
             # Return error report
             return FundamentalsReport(
                 symbol=symbol,

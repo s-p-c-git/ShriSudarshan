@@ -2,7 +2,6 @@
 Logging utilities for Project Shri Sudarshan.
 """
 
-import sys
 import structlog
 from structlog.stdlib import LoggerFactory
 
@@ -23,9 +22,11 @@ def setup_logging():
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer()
-            if settings.environment == "production"
-            else structlog.dev.ConsoleRenderer(),
+            (
+                structlog.processors.JSONRenderer()
+                if settings.environment == "production"
+                else structlog.dev.ConsoleRenderer()
+            ),
         ],
         context_class=dict,
         logger_factory=LoggerFactory(),
@@ -36,10 +37,10 @@ def setup_logging():
 def get_logger(name: str):
     """
     Get a logger instance.
-    
+
     Args:
         name: Logger name (usually __name__)
-        
+
     Returns:
         Configured logger
     """

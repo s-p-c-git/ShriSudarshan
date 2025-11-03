@@ -1,9 +1,8 @@
 """Oversight & Learning Team - Portfolio Manager."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
-from ..base import CriticalAgent
 from ...config.prompts import PORTFOLIO_MANAGER_PROMPT
 from ...data.schemas import (
     AgentRole,
@@ -12,6 +11,8 @@ from ...data.schemas import (
     StrategyProposal,
 )
 from ...utils import get_logger
+from ..base import CriticalAgent
+
 
 logger = get_logger(__name__)
 
@@ -19,40 +20,40 @@ logger = get_logger(__name__)
 class PortfolioManager(CriticalAgent):
     """
     Portfolio Manager agent.
-    
+
     Makes final approval/rejection decisions on trade proposals.
     Central decision-making authority for the system.
     """
-    
+
     def __init__(self):
         super().__init__(
             role=AgentRole.PORTFOLIO_MANAGER,
             system_prompt=PORTFOLIO_MANAGER_PROMPT,
             temperature=0.4,
         )
-    
-    async def make_decision(self, context: Dict[str, Any]) -> PortfolioDecision:
+
+    async def make_decision(self, context: dict[str, Any]) -> PortfolioDecision:
         """
         Make final decision on trade proposal.
-        
+
         Args:
             context: Contains all analysis, debate, strategy, risk assessment
-            
+
         Returns:
             PortfolioDecision with final approval
         """
         symbol = context.get("symbol", "UNKNOWN")
         strategy_proposal: StrategyProposal = context.get("strategy_proposal")
         risk_assessment: RiskAssessment = context.get("risk_assessment")
-        
+
         logger.info("Making portfolio decision", symbol=symbol)
-        
+
         try:
             # Summarize key information
             debate_summary = strategy_proposal.debate_summary if strategy_proposal else "No debate"
             risk_approved = risk_assessment.approved if risk_assessment else False
             risk_score = risk_assessment.risk_score if risk_assessment else 1.0
-            
+
             # Construct input for LLM
             input_text = f"""
 Make the FINAL decision on whether to approve the trade for {symbol}.
@@ -86,10 +87,10 @@ Consider:
 - Market conditions
 - Confidence levels
 """
-            
+
             # Generate decision
             response = await self._generate_response(input_text)
-            
+
             # Parse JSON response
             try:
                 if "```json" in response:
@@ -98,26 +99,26 @@ Consider:
                     json_str = response.split("```")[1].split("```")[0].strip()
                 else:
                     json_str = response.strip()
-                
+
                 parsed = json.loads(json_str)
-                
+
                 approved = parsed.get("approved", False)
                 rationale = parsed.get("rationale", response[:300])
                 monitoring = parsed.get("monitoring_requirements", [])
                 exit_triggers = parsed.get("exit_triggers", [])
-                
+
             except (json.JSONDecodeError, KeyError, IndexError) as e:
                 logger.warning("Failed to parse response, using conservative default", error=str(e))
                 approved = False
                 rationale = "Could not parse decision - rejecting for safety"
                 monitoring = []
                 exit_triggers = []
-            
+
             # Override if risk manager rejected
             if not risk_approved:
                 approved = False
                 rationale = f"Risk Manager rejected trade. {rationale}"
-            
+
             decision = PortfolioDecision(
                 symbol=symbol,
                 approved=approved,
@@ -127,18 +128,18 @@ Consider:
                 exit_triggers=exit_triggers,
                 notes="",
             )
-            
+
             logger.info(
                 "Portfolio decision made",
                 symbol=symbol,
                 approved=approved,
             )
-            
+
             return decision
-            
+
         except Exception as e:
             logger.error("Portfolio decision failed", symbol=symbol, error=str(e))
-            
+
             # Conservative default: reject on error
             return PortfolioDecision(
                 symbol=symbol,

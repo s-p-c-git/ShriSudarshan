@@ -32,9 +32,17 @@ This directory contains automated workflows for continuous integration and deplo
 - Pull requests to `main` or `develop` branches
 
 **What it does**:
-- Checks code formatting with Black
-- Lints code with Ruff
+- Checks code formatting with Black (line length: 100)
+- Lints code with Ruff (modern, fast Python linter)
 - Performs type checking with mypy (non-blocking)
+- Uses cached dependencies for faster runs
+- Installs project dependencies for accurate type checking
+
+**Configuration**:
+- Linting rules are configured in `pyproject.toml`
+- Black: line-length=100, target Python 3.9+
+- Ruff: pycodestyle, Pyflakes, isort, pyupgrade, flake8-bugbear
+- MyPy: ignore-missing-imports enabled, no implicit optional disabled
 
 **Status Badge**:
 ```markdown
@@ -103,11 +111,17 @@ Before pushing, you can run the same checks locally:
 # Run tests
 pytest --verbose --cov=src --cov-report=term-missing
 
-# Check formatting
+# Check formatting (use pyproject.toml config)
 black --check src/ tests/ examples/
+
+# Auto-format code
+black src/ tests/ examples/
 
 # Lint code
 ruff check src/ tests/ examples/
+
+# Auto-fix linting issues
+ruff check --fix src/ tests/ examples/
 
 # Type check
 mypy src/ --ignore-missing-imports
@@ -116,6 +130,8 @@ mypy src/ --ignore-missing-imports
 python -m build
 twine check dist/*
 ```
+
+**Note**: All linting tools now use configuration from `pyproject.toml`.
 
 ## Troubleshooting
 
