@@ -443,6 +443,7 @@ def test_env_vars(monkeypatch):
 def mock_fundamentals_analyst():
     """Mock FundamentalsAnalyst for testing."""
     from tests.mock_agents import MockFundamentalsAnalyst
+
     return MockFundamentalsAnalyst()
 
 
@@ -450,6 +451,7 @@ def mock_fundamentals_analyst():
 def mock_technical_analyst():
     """Mock TechnicalAnalyst for testing."""
     from tests.mock_agents import MockTechnicalAnalyst
+
     return MockTechnicalAnalyst()
 
 
@@ -457,6 +459,7 @@ def mock_technical_analyst():
 def mock_sentiment_analyst():
     """Mock SentimentAnalyst for testing."""
     from tests.mock_agents import MockSentimentAnalyst
+
     return MockSentimentAnalyst()
 
 
@@ -464,6 +467,7 @@ def mock_sentiment_analyst():
 def mock_macro_news_analyst():
     """Mock MacroNewsAnalyst for testing."""
     from tests.mock_agents import MockMacroNewsAnalyst
+
     return MockMacroNewsAnalyst()
 
 
@@ -471,6 +475,7 @@ def mock_macro_news_analyst():
 def mock_bullish_researcher():
     """Mock BullishResearcher for testing."""
     from tests.mock_agents import MockBullishResearcher
+
     return MockBullishResearcher()
 
 
@@ -478,6 +483,7 @@ def mock_bullish_researcher():
 def mock_bearish_researcher():
     """Mock BearishResearcher for testing."""
     from tests.mock_agents import MockBearishResearcher
+
     return MockBearishResearcher()
 
 
@@ -485,6 +491,7 @@ def mock_bearish_researcher():
 def mock_derivatives_strategist():
     """Mock DerivativesStrategist for testing."""
     from tests.mock_agents import MockDerivativesStrategist
+
     return MockDerivativesStrategist()
 
 
@@ -492,6 +499,7 @@ def mock_derivatives_strategist():
 def mock_equity_trader():
     """Mock EquityTrader for testing."""
     from tests.mock_agents import MockEquityTrader
+
     return MockEquityTrader()
 
 
@@ -499,6 +507,7 @@ def mock_equity_trader():
 def mock_fno_trader():
     """Mock FnOTrader for testing."""
     from tests.mock_agents import MockFnOTrader
+
     return MockFnOTrader()
 
 
@@ -506,6 +515,7 @@ def mock_fno_trader():
 def mock_risk_manager():
     """Mock RiskManager for testing."""
     from tests.mock_agents import MockRiskManager
+
     return MockRiskManager()
 
 
@@ -513,6 +523,7 @@ def mock_risk_manager():
 def mock_portfolio_manager():
     """Mock PortfolioManager for testing."""
     from tests.mock_agents import MockPortfolioManager
+
     return MockPortfolioManager()
 
 
@@ -520,4 +531,5 @@ def mock_portfolio_manager():
 def mock_reflective_agent():
     """Mock ReflectiveAgent for testing."""
     from tests.mock_agents import MockReflectiveAgent
+
     return MockReflectiveAgent()

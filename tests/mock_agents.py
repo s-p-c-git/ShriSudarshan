@@ -10,8 +10,8 @@ from unittest.mock import AsyncMock
 
 from src.agents.base import BaseAgent, CriticalAgent
 from src.data.schemas import (
-    AgentRole,
     AgentReport,
+    AgentRole,
     DebateArgument,
     ExecutionPlan,
     FundamentalsReport,
@@ -34,7 +34,7 @@ from src.data.schemas import (
 class MockBaseAgent(BaseAgent):
     """
     Mock base agent that doesn't call LLM APIs.
-    
+
     Can be used to test agent workflow without API dependencies.
     """
 
@@ -55,7 +55,7 @@ class MockBaseAgent(BaseAgent):
             temperature=temperature,
             provider=provider,
         )
-        
+
         # Replace LLM with AsyncMock
         mock_response = AsyncMock()
         mock_response.content = "Mock LLM response"
@@ -75,7 +75,7 @@ class MockBaseAgent(BaseAgent):
 class MockCriticalAgent(CriticalAgent):
     """
     Mock critical agent that doesn't call LLM APIs.
-    
+
     Can be used to test critical agent workflow without API dependencies.
     """
 
@@ -94,7 +94,7 @@ class MockCriticalAgent(CriticalAgent):
             temperature=temperature,
             provider=provider,
         )
-        
+
         # Replace LLM with AsyncMock
         mock_response = AsyncMock()
         mock_response.content = "Mock LLM response"
@@ -120,7 +120,7 @@ class MockFundamentalsAnalyst(MockBaseAgent):
     async def analyze(self, context: dict[str, Any]) -> FundamentalsReport:
         """Return mock fundamentals report."""
         symbol = context.get("symbol", "TEST")
-        
+
         return FundamentalsReport(
             agent_role=AgentRole.FUNDAMENTALS_ANALYST,
             symbol=symbol,
@@ -154,7 +154,7 @@ class MockTechnicalAnalyst(MockBaseAgent):
     async def analyze(self, context: dict[str, Any]) -> TechnicalReport:
         """Return mock technical report."""
         symbol = context.get("symbol", "TEST")
-        
+
         return TechnicalReport(
             agent_role=AgentRole.TECHNICAL_ANALYST,
             symbol=symbol,
@@ -182,7 +182,7 @@ class MockSentimentAnalyst(MockBaseAgent):
     async def analyze(self, context: dict[str, Any]) -> SentimentReport:
         """Return mock sentiment report."""
         symbol = context.get("symbol", "TEST")
-        
+
         return SentimentReport(
             agent_role=AgentRole.SENTIMENT_ANALYST,
             symbol=symbol,
@@ -209,7 +209,7 @@ class MockMacroNewsAnalyst(MockBaseAgent):
     async def analyze(self, context: dict[str, Any]) -> MacroNewsReport:
         """Return mock macro news report."""
         symbol = context.get("symbol", "TEST")
-        
+
         return MacroNewsReport(
             agent_role=AgentRole.MACRO_NEWS_ANALYST,
             symbol=symbol,
@@ -320,7 +320,7 @@ class MockDerivativesStrategist(MockBaseAgent):
     async def propose_strategy(self, context: dict[str, Any]) -> StrategyProposal:
         """Return mock strategy proposal."""
         symbol = context.get("symbol", "TEST")
-        
+
         return StrategyProposal(
             symbol=symbol,
             strategy_type=StrategyType.COVERED_CALL,
@@ -363,7 +363,7 @@ class MockEquityTrader(MockBaseAgent):
     async def create_execution_plan(self, context: dict[str, Any]) -> ExecutionPlan:
         """Return mock execution plan for equity trades."""
         symbol = context.get("symbol", "TEST")
-        
+
         return ExecutionPlan(
             symbol=symbol,
             strategy_type=StrategyType.LONG_EQUITY,
@@ -404,7 +404,7 @@ class MockFnOTrader(MockBaseAgent):
     async def create_execution_plan(self, context: dict[str, Any]) -> ExecutionPlan:
         """Return mock execution plan for F&O trades."""
         symbol = context.get("symbol", "TEST")
-        
+
         return ExecutionPlan(
             symbol=symbol,
             strategy_type=StrategyType.COVERED_CALL,
@@ -461,7 +461,7 @@ class MockRiskManager(MockCriticalAgent):
         """Return mock risk assessment."""
         symbol = context.get("symbol", "TEST")
         approved = context.get("should_approve", True)  # Allow control in tests
-        
+
         return RiskAssessment(
             symbol=symbol,
             approved=approved,
@@ -469,7 +469,9 @@ class MockRiskManager(MockCriticalAgent):
             position_size_pct=4.5,
             sector_exposure="Technology: 15%",
             risk_warnings=["High concentration in tech sector"] if approved else ["Excessive risk"],
-            recommendation="Approved with position size limit" if approved else "Rejected - risk too high",
+            recommendation=(
+                "Approved with position size limit" if approved else "Rejected - risk too high"
+            ),
         )
 
 
@@ -495,17 +497,21 @@ class MockPortfolioManager(MockCriticalAgent):
     async def make_decision(self, context: dict[str, Any]) -> PortfolioDecision:
         """Return mock portfolio decision."""
         symbol = context.get("symbol", "TEST")
-        
+
         # Check if risk assessment approved
         risk_assessment = context.get("risk_assessment")
         approved = risk_assessment.approved if risk_assessment else True
-        
+
         return PortfolioDecision(
             symbol=symbol,
             approved=approved,
-            decision_rationale="Strategy aligns with portfolio objectives" if approved else "Risk concerns",
+            decision_rationale=(
+                "Strategy aligns with portfolio objectives" if approved else "Risk concerns"
+            ),
             position_size=5000.00 if approved else 0.0,
-            monitoring_requirements=["Daily price checks", "Volatility monitoring"] if approved else [],
+            monitoring_requirements=(
+                ["Daily price checks", "Volatility monitoring"] if approved else []
+            ),
             conditions=["Exit if stop loss triggered"] if approved else [],
         )
 
