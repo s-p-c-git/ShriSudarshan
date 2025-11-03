@@ -27,6 +27,7 @@ from .schemas import (
     TrendDirection,
 )
 
+
 __all__ = [
     "AgentReport",
     "AgentRole",
