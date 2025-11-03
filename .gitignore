@@ -36,7 +36,7 @@ ENV/
 .env
 
 # Data and Cache
-data/
+/data/
 *.db
 *.sqlite
 *.sqlite3

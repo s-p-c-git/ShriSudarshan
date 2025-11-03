@@ -1,17 +1,10 @@
 """Test configuration and fixtures for Project Shri Sudarshan."""
 
-import os
-
-# Import project modules
-import sys
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, Mock
 
 import pandas as pd
 import pytest
-
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from src.data.schemas import (
     AgentRole,
