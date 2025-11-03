@@ -98,7 +98,11 @@ async def main():
     )
 
     # Validate API key
-    if not settings.openai_api_key or settings.openai_api_key == "your_openai_api_key_here":
+    if (
+        not settings.openai_api_key
+        or settings.openai_api_key == "your_openai_api_key_here"
+        or settings.openai_api_key == "test-key-not-set"
+    ):
         logger.error("OpenAI API key not configured. Please set OPENAI_API_KEY in .env file")
         print("\nError: OpenAI API key not configured!")
         print("Please copy .env.example to .env and add your API key.")

@@ -19,7 +19,9 @@ class Settings(BaseSettings):
     )
 
     # OpenAI Configuration
-    openai_api_key: str = Field(..., description="OpenAI API key")
+    openai_api_key: str = Field(
+        default="test-key-not-set", description="OpenAI API key"
+    )
     premium_model: str = Field(
         default="gpt-4o", description="Premium LLM model for critical decisions"
     )
