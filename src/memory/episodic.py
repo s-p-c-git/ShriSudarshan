@@ -95,11 +95,11 @@ class EpisodicMemory:
             # Handle both string and enum types for strategy_type
             # Pydantic's use_enum_values=True converts enums to strings
             strategy_type_value = (
-                trade.strategy_type 
-                if isinstance(trade.strategy_type, str) 
+                trade.strategy_type
+                if isinstance(trade.strategy_type, str)
                 else trade.strategy_type.value
             )
-            
+
             record = TradeRecord(
                 trade_id=trade.trade_id,
                 symbol=trade.symbol,
@@ -129,7 +129,7 @@ class EpisodicMemory:
         session = self._get_session()
         try:
             record = ReflectionRecord(
-                reflection_id=f"refl_{reflection.trade_id}_{int(datetime.now().timestamp())}",
+                reflection_id=f"refl_{reflection.trade_id}_{int(datetime.now().timestamp() * 1000000)}",
                 trade_id=reflection.trade_id,
                 symbol=reflection.symbol,
                 analysis_summary=reflection.analysis_summary,
