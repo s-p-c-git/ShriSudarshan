@@ -80,16 +80,23 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 6. **Install development tools**:
    ```bash
-   pip install black ruff mypy pytest pytest-asyncio pytest-cov
+   pip install black ruff mypy pytest pytest-asyncio pytest-cov pre-commit
    ```
 
-7. **Configure environment**:
+7. **Set up pre-commit hooks** (optional but recommended):
+   ```bash
+   pre-commit install
+   ```
+   
+   This will automatically run Black and Ruff on every commit to catch style issues early.
+
+8. **Configure environment**:
    ```bash
    cp .env.example .env
    # Edit .env with your API keys (for testing)
    ```
 
-8. **Run tests** to verify setup:
+9. **Run tests** to verify setup:
    ```bash
    pytest tests/
    ```
@@ -135,10 +142,17 @@ We are committed to providing a welcoming and inclusive environment for all cont
    black src/ tests/
    ```
 
-5. **Lint code**:
+5. **Lint code** (must pass with no errors):
    ```bash
    ruff check src/ tests/
    ```
+   
+   **Note**: Ruff enforces:
+   - Import sorting (PEP 8 standards)
+   - Use of native types (`dict`, `list`, `tuple`) instead of deprecated `Dict`, `List`, `Tuple` from typing
+   - Code quality and style rules
+   
+   Use `ruff check --fix` to auto-fix many issues.
 
 6. **Type check**:
    ```bash
@@ -192,14 +206,14 @@ from ..data.schemas import AgentRole
 
 #### Type Hints
 
-Always use type hints:
+Always use type hints with **Python 3.9+ native types** (`dict`, `list`, `tuple` instead of `Dict`, `List`, `Tuple` from typing):
 
 ```python
 def analyze_data(
     symbol: str,
     period: int = 30,
     detailed: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Analyze data for the given symbol."""
     pass
 ```
@@ -212,7 +226,7 @@ Use **Google-style docstrings**:
 def calculate_metrics(
     prices: pd.DataFrame,
     window: int = 20
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Calculate technical metrics from price data.
     
@@ -221,7 +235,7 @@ def calculate_metrics(
         window: Rolling window size for calculations
         
     Returns:
-        Dict with calculated metrics
+        Dictionary with calculated metrics
         
     Raises:
         ValueError: If prices DataFrame is empty
@@ -288,6 +302,48 @@ class AgentReport(BaseModel):
     class Config:
         use_enum_values = True
 ```
+
+### Code Quality Tools
+
+Project Shri Sudarshan uses several tools to maintain code quality:
+
+#### Black (Code Formatter)
+- **Purpose**: Automatic code formatting
+- **Configuration**: In `pyproject.toml` (line-length = 100)
+- **Usage**: `black src/ tests/ examples/`
+- **CI**: Must pass for all PRs
+
+#### Ruff (Linter)
+- **Purpose**: Fast Python linter (replaces flake8, isort, and more)
+- **Configuration**: In `pyproject.toml` with rules:
+  - `E/W` - pycodestyle errors and warnings
+  - `F` - Pyflakes
+  - `I` - Import sorting (isort)
+  - `N` - PEP 8 naming conventions
+  - `UP` - pyupgrade (modern Python syntax)
+  - `B` - flake8-bugbear
+  - `C4` - flake8-comprehensions
+- **Usage**: 
+  - Check: `ruff check src/ tests/ examples/`
+  - Auto-fix: `ruff check --fix src/ tests/ examples/`
+- **CI**: Must pass with zero errors
+- **Key requirements**:
+  - Imports must be sorted (stdlib, third-party, local)
+  - Use native types: `dict`, `list`, `tuple` (not `Dict`, `List`, `Tuple` from typing)
+  - Follow PEP 8 standards
+
+#### mypy (Type Checker)
+- **Purpose**: Static type checking
+- **Configuration**: In `pyproject.toml`
+- **Usage**: `mypy src/ --ignore-missing-imports`
+- **CI**: Runs but doesn't block (continue-on-error: true)
+
+#### Pre-commit Hooks
+- **Purpose**: Automatically run checks before each commit
+- **Setup**: `pre-commit install` (after installing pre-commit)
+- **Configuration**: `.pre-commit-config.yaml`
+- **Runs**: Black, Ruff, and other checks automatically
+- **Benefits**: Catch issues early before pushing to CI
 
 ---
 
@@ -412,6 +468,8 @@ async def test_async_function():
    ruff check src/ tests/
    mypy src/
    ```
+   
+   **Tip**: If you've set up pre-commit hooks (step 7 in setup), these checks run automatically on commit.
 
 5. **Update CHANGELOG** (if applicable)
 

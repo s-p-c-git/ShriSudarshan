@@ -1,11 +1,12 @@
 """News provider using yfinance and keyword-based sentiment analysis."""
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 import yfinance as yf
 
 from src.utils.logger import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -60,7 +61,7 @@ class NewsProvider:
 
     def __init__(self):
         """Initialize the news provider."""
-        self._cache: Dict[str, Any] = {}
+        self._cache: dict[str, Any] = {}
         logger.info("NewsProvider initialized")
 
     def _analyze_sentiment(self, text: str) -> str:
@@ -92,7 +93,7 @@ class NewsProvider:
 
     def get_company_news(
         self, symbol: str, days_back: int = 7, max_articles: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get news articles for a company.
 
@@ -148,7 +149,7 @@ class NewsProvider:
             logger.error("Failed to get company news", symbol=symbol, error=str(e))
             return []
 
-    def get_market_news(self, days_back: int = 7, max_articles: int = 20) -> List[Dict[str, Any]]:
+    def get_market_news(self, days_back: int = 7, max_articles: int = 20) -> list[dict[str, Any]]:
         """
         Get general market news.
 
@@ -215,7 +216,7 @@ class NewsProvider:
             logger.error("Failed to get market news", error=str(e))
             return []
 
-    def aggregate_sentiment(self, symbol: str, days_back: int = 7) -> Dict[str, Any]:
+    def aggregate_sentiment(self, symbol: str, days_back: int = 7) -> dict[str, Any]:
         """
         Aggregate sentiment from recent news.
 
@@ -290,7 +291,7 @@ class NewsProvider:
                 "recent_headlines": [],
             }
 
-    def get_economic_calendar(self, days_ahead: int = 7) -> List[Dict[str, Any]]:
+    def get_economic_calendar(self, days_ahead: int = 7) -> list[dict[str, Any]]:
         """
         Get upcoming economic events (simplified placeholder).
 

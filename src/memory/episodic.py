@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from sqlalchemy import JSON, Column, DateTime, Float, String, Text, create_engine
-from sqlalchemy.orm import Session, sessionmaker, declarative_base
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from ..config import settings
 from ..data.schemas import Reflection, TradeOutcome
