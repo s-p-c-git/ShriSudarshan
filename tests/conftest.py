@@ -1,10 +1,16 @@
 """Test configuration and fixtures for Project Shri Sudarshan."""
 
+import os
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, Mock
 
 import pandas as pd
 import pytest
+
+# Set required environment variables before any imports that use Settings
+os.environ.setdefault("OPENAI_API_KEY", "test-key-123")
+os.environ.setdefault("PREMIUM_MODEL", "gpt-4o")
+os.environ.setdefault("STANDARD_MODEL", "gpt-4o-mini")
 
 from src.data.schemas import (
     AgentRole,
