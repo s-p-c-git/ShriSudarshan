@@ -236,7 +236,7 @@ async def test_base_agent_generate_response():
         mock_response.content = "Test response"
         mock_llm = Mock()
         mock_llm.ainvoke = AsyncMock(return_value=mock_response)
-        
+
         with patch.object(agent, "llm", new=mock_llm):
             response = await agent._generate_response("test input")
 
