@@ -6,14 +6,65 @@ This module defines the abstract base class that all agents inherit from.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import HumanMessage, SystemMessage
+from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 
 from ..config import settings
 from ..data.schemas import AgentReport, AgentRole
+
+
+def create_llm(
+    model_name: Optional[str] = None,
+    temperature: float = 0.7,
+    provider: Optional[str] = None,
+) -> Union[ChatOpenAI, ChatAnthropic]:
+    """
+    Factory function to create an LLM instance based on the configured provider.
+
+    Args:
+        model_name: Specific model to use (overrides defaults)
+        temperature: Temperature for LLM generation
+        provider: LLM provider to use (overrides settings.llm_provider)
+
+    Returns:
+        ChatOpenAI or ChatAnthropic instance
+
+    Raises:
+        ValueError: If provider is not supported or API key is missing
+    """
+    llm_provider = provider or settings.llm_provider
+
+    if llm_provider == "openai":
+        # Use provided model or default to standard model
+        if model_name is None:
+            model_name = settings.standard_model
+
+        return ChatOpenAI(
+            model=model_name,
+            temperature=temperature,
+            openai_api_key=settings.openai_api_key,
+        )
+    elif llm_provider == "anthropic":
+        # Use provided model or default to standard model
+        if model_name is None:
+            model_name = settings.anthropic_standard_model
+
+        if not settings.anthropic_api_key:
+            raise ValueError(
+                "anthropic_api_key must be set when using Anthropic provider"
+            )
+
+        return ChatAnthropic(
+            model=model_name,
+            temperature=temperature,
+            anthropic_api_key=settings.anthropic_api_key,
+        )
+    else:
+        raise ValueError(f"Unsupported LLM provider: {llm_provider}")
 
 
 class BaseAgent(ABC):
@@ -30,6 +81,7 @@ class BaseAgent(ABC):
         system_prompt: str,
         model_name: Optional[str] = None,
         temperature: float = 0.7,
+        provider: Optional[str] = None,
     ):
         """
         Initialize the base agent.
@@ -39,20 +91,18 @@ class BaseAgent(ABC):
             system_prompt: The system prompt defining agent behavior
             model_name: LLM model to use (defaults to standard_model from settings)
             temperature: Temperature for LLM generation
+            provider: LLM provider to use (defaults to settings.llm_provider)
         """
         self.role = role
         self.system_prompt = system_prompt
         self.temperature = temperature
+        self.provider = provider or settings.llm_provider
 
-        # Select model based on importance
-        if model_name is None:
-            model_name = settings.standard_model
-
-        # Initialize LLM
-        self.llm = ChatOpenAI(
-            model=model_name,
+        # Initialize LLM using factory function
+        self.llm = create_llm(
+            model_name=model_name,
             temperature=temperature,
-            openai_api_key=settings.openai_api_key,
+            provider=self.provider,
         )
 
         # Create prompt template
@@ -118,7 +168,7 @@ class CriticalAgent(BaseAgent):
     """
     Base class for critical decision-making agents.
 
-    These agents use the premium model (GPT-4o) by default.
+    These agents use the premium model (GPT-4o or Claude 3.5 Sonnet) by default.
     """
 
     def __init__(
@@ -126,11 +176,21 @@ class CriticalAgent(BaseAgent):
         role: AgentRole,
         system_prompt: str,
         temperature: float = 0.7,
+        provider: Optional[str] = None,
     ):
         """Initialize critical agent with premium model."""
+        llm_provider = provider or settings.llm_provider
+
+        # Select premium model based on provider
+        if llm_provider == "openai":
+            premium_model = settings.premium_model
+        else:  # anthropic
+            premium_model = settings.anthropic_premium_model
+
         super().__init__(
             role=role,
             system_prompt=system_prompt,
-            model_name=settings.premium_model,
+            model_name=premium_model,
             temperature=temperature,
+            provider=provider,
         )
