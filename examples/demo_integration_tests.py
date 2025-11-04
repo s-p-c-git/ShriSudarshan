@@ -36,27 +36,27 @@ def demo_key_validation():
     key = get_anthropic_key()
     available = is_anthropic_available()
 
-    print(f"\n1. Checking for ANTHROPIC_API_KEY environment variable...")
+    print("\n1. Checking for ANTHROPIC_API_KEY environment variable...")
     if key:
         # Show key info without exposing actual value
-        print(f"   ✅ API key found")
+        print("   ✅ API key found")
         print(f"   • Length: {len(key)} characters")
         print(f"   • Prefix: {key[:7]}... (rest hidden for security)")
         print(f"   • Valid format: {key.startswith('sk-ant-') and len(key) > 20}")
     else:
-        print(f"   ❌ API key NOT found")
-        print(f"   • Set with: export ANTHROPIC_API_KEY='sk-ant-...'")
+        print("   ❌ API key NOT found")
+        print("   • Set with: export ANTHROPIC_API_KEY='sk-ant-...'")
 
-    print(f"\n2. Integration tests status:")
+    print("\n2. Integration tests status:")
     if available:
-        print(f"   ✅ WILL RUN - Valid API key detected")
-        print(f"   • Tests will make real API calls")
-        print(f"   • Run with: pytest -m anthropic")
+        print("   ✅ WILL RUN - Valid API key detected")
+        print("   • Tests will make real API calls")
+        print("   • Run with: pytest -m anthropic")
     else:
-        print(f"   ⏭️  WILL SKIP - No valid API key")
-        print(f"   • Tests marked with @pytest.mark.skipif")
-        print(f"   • No API calls will be made")
-        print(f"   • Safe to run: pytest -m anthropic")
+        print("   ⏭️  WILL SKIP - No valid API key")
+        print("   • Tests marked with @pytest.mark.skipif")
+        print("   • No API calls will be made")
+        print("   • Safe to run: pytest -m anthropic")
 
     print("\n" + "=" * 70)
 
