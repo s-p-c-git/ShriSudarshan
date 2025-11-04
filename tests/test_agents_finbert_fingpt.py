@@ -226,12 +226,12 @@ async def test_fingpt_analyst_structured_output(sample_context):
 3. Market share expansion
 
 Risks:
-- Competition increasing
-- Supply chain concerns
+1. Competition increasing
+2. Supply chain concerns
 
 Opportunities:
-- New product launches
-- Market expansion
+1. New product launches
+2. Market expansion
 """
 
     agent._generate_response = mock_generate

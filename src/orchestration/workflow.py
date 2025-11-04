@@ -205,13 +205,18 @@ class TradingWorkflow:
             print(
                 f"  ✓ Technical: {technical_report.trend_direction.value if technical_report else 'failed'}"
             )
-            print(
-                f"  ✓ FinBERT: {finbert_report.sentiment.value if finbert_report else 'failed'} "
-                f"(score: {finbert_report.sentiment_score:.2f})" if finbert_report else "  ✓ FinBERT: failed"
-            )
-            print(
-                f"  ✓ FinGPT: {len(fingpt_report.key_insights) if fingpt_report else 0} insights"
-            )
+            if finbert_report:
+                print(
+                    f"  ✓ FinBERT: {finbert_report.sentiment.value} "
+                    f"(score: {finbert_report.sentiment_score:.2f})"
+                )
+            else:
+                print("  ✓ FinBERT: failed")
+
+            if fingpt_report:
+                print(f"  ✓ FinGPT: {len(fingpt_report.key_insights)} insights")
+            else:
+                print("  ✓ FinGPT: failed")
 
             state["analysis_complete"] = True
             state["current_phase"] = "analysis"

@@ -171,8 +171,7 @@ class FinBERTSentimentAnalyst:
             else:
                 sentiment = Sentiment.NEUTRAL
 
-            # Convert confidence to 0-1 scale and map to sentiment_score
-            confidence_level = min(10, max(1, int(result["confidence"] * 10)))
+            # Calculate sentiment score from positive and negative
             sentiment_score = result["positive"] - result["negative"]
 
             # Create summary
@@ -201,7 +200,7 @@ class FinBERTSentimentAnalyst:
                 symbol=symbol,
                 sentiment=sentiment.value,
                 score=sentiment_score,
-                confidence=confidence_level,
+                confidence=result["confidence"],
             )
 
             return report

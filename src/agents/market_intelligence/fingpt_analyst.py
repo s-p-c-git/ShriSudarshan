@@ -12,6 +12,15 @@ from ...utils import get_logger
 
 logger = get_logger(__name__)
 
+# Configuration constants
+MAX_INPUT_LENGTH = 2000  # Maximum input text length to avoid token limits
+MIN_INSIGHTS_FOR_HIGH_CONFIDENCE = 3  # Minimum insights for confidence >= 0.8
+MIN_RISKS_FOR_HIGH_CONFIDENCE = 2  # Minimum risks for confidence >= 0.9
+MIN_OPPORTUNITIES_FOR_HIGH_CONFIDENCE = 2  # Minimum opportunities for confidence >= 0.9
+BASE_CONFIDENCE = 0.7  # Default confidence level
+HIGH_CONFIDENCE_THRESHOLD = 0.8  # Confidence with good insights
+VERY_HIGH_CONFIDENCE_THRESHOLD = 0.9  # Confidence with insights, risks, and opportunities
+
 
 class FinGPTGenerativeAnalyst:
     """
@@ -224,7 +233,7 @@ Provide:
         try:
             # Select appropriate prompt
             prompt_template = self.prompts.get(analysis_type, self.prompts["general_analysis"])
-            prompt = prompt_template.format(symbol=symbol, text=text[:2000])  # Limit input
+            prompt = prompt_template.format(symbol=symbol, text=text[:MAX_INPUT_LENGTH])
 
             # Generate analysis
             response = self._generate_response(prompt, max_length=512)
@@ -233,11 +242,14 @@ Provide:
             parsed = self._parse_analysis(response)
 
             # Calculate confidence based on response quality
-            confidence = 0.7  # Default
-            if len(parsed["insights"]) >= 3:
-                confidence = 0.8
-            if len(parsed["risks"]) >= 2 and len(parsed["opportunities"]) >= 2:
-                confidence = 0.9
+            confidence = BASE_CONFIDENCE
+            if len(parsed["insights"]) >= MIN_INSIGHTS_FOR_HIGH_CONFIDENCE:
+                confidence = HIGH_CONFIDENCE_THRESHOLD
+            if (
+                len(parsed["risks"]) >= MIN_RISKS_FOR_HIGH_CONFIDENCE
+                and len(parsed["opportunities"]) >= MIN_OPPORTUNITIES_FOR_HIGH_CONFIDENCE
+            ):
+                confidence = VERY_HIGH_CONFIDENCE_THRESHOLD
 
             # Create summary
             summary = f"FinGPT {analysis_type.replace('_', ' ')} for {symbol}. "
