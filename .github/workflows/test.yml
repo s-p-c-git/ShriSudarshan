@@ -54,6 +54,9 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.12']
+    env:
+      # Set job-level env var from secret (will be empty string if secret doesn't exist)
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     
     steps:
     - name: Checkout code
@@ -72,14 +75,12 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
     - name: Run Anthropic integration tests
-      if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
-      env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      if: ${{ env.ANTHROPIC_API_KEY != '' }}
       run: |
         pytest --verbose -m anthropic tests/test_integration_anthropic.py
     
     - name: Skip integration tests (no API key)
-      if: ${{ secrets.ANTHROPIC_API_KEY == '' }}
+      if: ${{ env.ANTHROPIC_API_KEY == '' }}
       run: |
         echo "⚠️ Anthropic integration tests skipped: ANTHROPIC_API_KEY secret not set"
         echo "To enable integration tests, add ANTHROPIC_API_KEY to repository secrets"
