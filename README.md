@@ -123,6 +123,7 @@ Technical Documentation:
  * docs/API_REFERENCE.md - Complete API reference with practical examples
  * docs/DEPLOYMENT.md - Deployment guide for Docker, Kubernetes, and cloud platforms
  * docs/TESTING.md - Testing strategies and best practices
+ * docs/INTEGRATION_TESTING.md - Guide for running integration tests with Anthropic API
 
 Operations Documentation:
  * docs/TROUBLESHOOTING.md - Common issues and solutions
