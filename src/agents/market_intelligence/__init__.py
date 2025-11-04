@@ -1,5 +1,7 @@
 """Market Intelligence Team package."""
 
+from .finbert_analyst import FinBERTSentimentAnalyst
+from .fingpt_analyst import FinGPTGenerativeAnalyst
 from .fundamentals import FundamentalsAnalyst
 from .macro_news import MacroNewsAnalyst
 from .sentiment import SentimentAnalyst
@@ -11,4 +13,6 @@ __all__ = [
     "MacroNewsAnalyst",
     "SentimentAnalyst",
     "TechnicalAnalyst",
+    "FinBERTSentimentAnalyst",
+    "FinGPTGenerativeAnalyst",
 ]

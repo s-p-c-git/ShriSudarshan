@@ -23,6 +23,8 @@ class AgentRole(str, Enum):
     TECHNICAL_ANALYST = "technical_analyst"
     SENTIMENT_ANALYST = "sentiment_analyst"
     MACRO_NEWS_ANALYST = "macro_news_analyst"
+    FINBERT_SENTIMENT_ANALYST = "finbert_sentiment_analyst"
+    FINGPT_GENERATIVE_ANALYST = "fingpt_generative_analyst"
     BULLISH_RESEARCHER = "bullish_researcher"
     BEARISH_RESEARCHER = "bearish_researcher"
     DERIVATIVES_STRATEGIST = "derivatives_strategist"
@@ -165,6 +167,29 @@ class MacroNewsReport(AgentReport):
     geopolitical_risks: list[str] = Field(default_factory=list)
     economic_indicators: dict[str, float] = Field(default_factory=dict)
     news_sentiment: Optional[float] = None
+
+
+class FinBERTSentimentReport(AgentReport):
+    """Report from FinBERT Sentiment Analyst."""
+
+    agent_role: AgentRole = Field(default=AgentRole.FINBERT_SENTIMENT_ANALYST)
+    sentiment: Sentiment = Field(default=Sentiment.NEUTRAL)
+    sentiment_score: float = Field(default=0.0, ge=-1.0, le=1.0)
+    positive_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    negative_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    neutral_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    text_analyzed: list[str] = Field(default_factory=list)
+
+
+class FinGPTGenerativeReport(AgentReport):
+    """Report from FinGPT Generative Analyst."""
+
+    agent_role: AgentRole = Field(default=AgentRole.FINGPT_GENERATIVE_ANALYST)
+    analysis_type: str = Field(default="general")
+    key_insights: list[str] = Field(default_factory=list)
+    risks_identified: list[str] = Field(default_factory=list)
+    opportunities_identified: list[str] = Field(default_factory=list)
+    detailed_summary: str = Field(default="")
 
 
 # =============================================================================

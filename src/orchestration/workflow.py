@@ -86,6 +86,8 @@ class TradingWorkflow:
         print(f"[Analysis Phase] Analyzing {state['symbol']}")
 
         from ..agents.market_intelligence import (
+            FinBERTSentimentAnalyst,
+            FinGPTGenerativeAnalyst,
             FundamentalsAnalyst,
             MacroNewsAnalyst,
             SentimentAnalyst,
@@ -98,6 +100,8 @@ class TradingWorkflow:
         macro_news_analyst = MacroNewsAnalyst()
         sentiment_analyst = SentimentAnalyst()
         technical_analyst = TechnicalAnalyst()
+        finbert_analyst = FinBERTSentimentAnalyst()
+        fingpt_analyst = FinGPTGenerativeAnalyst()
 
         # Initialize data providers (shared across analysts)
         market_data_provider = MarketDataProvider()
@@ -118,11 +122,22 @@ class TradingWorkflow:
                 import asyncio
 
                 print("  Running analysts concurrently...")
+
+                # First, get news for FinBERT and FinGPT
+                news_items = news_provider.get_news(state["symbol"], limit=10)
+                news_texts = [item["title"] + ". " + item.get("summary", "") for item in news_items]
+
+                # Prepare contexts for specialized analysts
+                finbert_context = {**context, "texts": news_texts}
+                fingpt_context = {**context, "texts": news_texts, "analysis_type": "analyze_news"}
+
                 results = await asyncio.gather(
                     fundamentals_analyst.analyze(context),
                     macro_news_analyst.analyze(context),
                     sentiment_analyst.analyze(context),
                     technical_analyst.analyze(context),
+                    finbert_analyst.analyze(finbert_context),
+                    fingpt_analyst.analyze(fingpt_context),
                     return_exceptions=True,
                 )
 
@@ -131,6 +146,8 @@ class TradingWorkflow:
                 macro_news_report = results[1] if not isinstance(results[1], Exception) else None
                 sentiment_report = results[2] if not isinstance(results[2], Exception) else None
                 technical_report = results[3] if not isinstance(results[3], Exception) else None
+                finbert_report = results[4] if not isinstance(results[4], Exception) else None
+                fingpt_report = results[5] if not isinstance(results[5], Exception) else None
 
                 # Log any errors
                 for i, result in enumerate(results):
@@ -140,16 +157,30 @@ class TradingWorkflow:
                             "MacroNews",
                             "Sentiment",
                             "Technical",
+                            "FinBERT",
+                            "FinGPT",
                         ]
                         print(f"  ⚠ {analyst_names[i]} Analyst failed: {result}")
                         state["errors"].append(f"{analyst_names[i]} analysis failed: {str(result)}")
             else:
                 # Run sequentially
                 print("  Running analysts sequentially...")
+
+                # Get news for specialized analysts
+                news_items = news_provider.get_news(state["symbol"], limit=10)
+                news_texts = [item["title"] + ". " + item.get("summary", "") for item in news_items]
+
                 fundamentals_report = await fundamentals_analyst.analyze(context)
                 macro_news_report = await macro_news_analyst.analyze(context)
                 sentiment_report = await sentiment_analyst.analyze(context)
                 technical_report = await technical_analyst.analyze(context)
+
+                # Prepare contexts for specialized analysts
+                finbert_context = {**context, "texts": news_texts}
+                fingpt_context = {**context, "texts": news_texts, "analysis_type": "analyze_news"}
+
+                finbert_report = await finbert_analyst.analyze(finbert_context)
+                fingpt_report = await fingpt_analyst.analyze(fingpt_context)
 
             # Store reports
             state["analyst_reports"] = {
@@ -157,6 +188,8 @@ class TradingWorkflow:
                 "macro_news": macro_news_report,
                 "sentiment": sentiment_report,
                 "technical": technical_report,
+                "finbert": finbert_report,
+                "fingpt": fingpt_report,
             }
 
             # Print summary
@@ -171,6 +204,13 @@ class TradingWorkflow:
             )
             print(
                 f"  ✓ Technical: {technical_report.trend_direction.value if technical_report else 'failed'}"
+            )
+            print(
+                f"  ✓ FinBERT: {finbert_report.sentiment.value if finbert_report else 'failed'} "
+                f"(score: {finbert_report.sentiment_score:.2f})" if finbert_report else "  ✓ FinBERT: failed"
+            )
+            print(
+                f"  ✓ FinGPT: {len(fingpt_report.key_insights) if fingpt_report else 0} insights"
             )
 
             state["analysis_complete"] = True
