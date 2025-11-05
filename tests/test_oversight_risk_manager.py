@@ -5,6 +5,10 @@ Tests for RiskManager oversight agent.
 These tests verify basic risk assessment functionality.
 """
 import pytest
+
+# Try to import, skip tests if dependencies missing
+pytest.importorskip("yfinance")
+
 from src.data.schemas import RiskAssessment, StrategyProposal, StrategyType, TradeDirection
 
 

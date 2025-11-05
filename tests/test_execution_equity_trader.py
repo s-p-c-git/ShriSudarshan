@@ -6,6 +6,10 @@ These tests are defensive and check for method existence before calling them,
 to avoid hard failures if APIs differ slightly.
 """
 import pytest
+
+# Try to import, skip tests if dependencies missing
+pytest.importorskip("yfinance")
+
 from src.data.schemas import Order, OrderSide, OrderType, StrategyProposal, StrategyType, TradeDirection
 
 

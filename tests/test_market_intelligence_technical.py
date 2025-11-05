@@ -5,6 +5,10 @@ Tests for TechnicalAnalyst market intelligence agent.
 These tests verify technical indicator calculations and chart pattern detection.
 """
 import pytest
+
+# Try to import, skip tests if dependencies missing
+pytest.importorskip("yfinance")
+
 import pandas as pd
 import numpy as np
 
