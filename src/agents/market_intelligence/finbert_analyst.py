@@ -120,14 +120,13 @@ class FinBERTSentimentAnalyst:
         avg_negative = total_negative / count
         avg_neutral = total_neutral / count
 
-        # Determine overall sentiment
-        max_score = max(avg_positive, avg_negative, avg_neutral)
-        if avg_positive == max_score:
-            sentiment = "positive"
-        elif avg_negative == max_score:
-            sentiment = "negative"
-        else:
-            sentiment = "neutral"
+        # Determine overall sentiment using argmax to avoid float equality issues
+        avg_scores = {
+            "positive": avg_positive,
+            "negative": avg_negative,
+            "neutral": avg_neutral,
+        }
+        sentiment = max(avg_scores, key=avg_scores.get)
 
         # Calculate confidence as the margin between top and second sentiment
         scores_sorted = sorted([avg_positive, avg_negative, avg_neutral], reverse=True)
