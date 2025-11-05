@@ -134,7 +134,7 @@ async def test_workflow_analysis_phase_integration(monkeypatch):
     if hasattr(workflow, "FinGPTGenerativeAnalyst"):
         monkeypatch.setattr(
             workflow, 
-            "FinGPTGenerativeAgent", 
+            "FinGPTGenerativeAnalyst", 
             lambda *a, **k: StubFinGPTAgent(fingpt_report)
         )
 
