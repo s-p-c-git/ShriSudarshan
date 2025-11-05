@@ -4,9 +4,6 @@ Tests for logging utilities.
 
 These tests verify the logger configuration and functionality.
 """
-import pytest
-
-
 def test_logger_module_import():
     """Test that logger module can be imported."""
     from src.utils import logger
