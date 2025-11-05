@@ -32,10 +32,23 @@ class TestEnums:
     """Test enum definitions."""
 
     def test_agent_role_enum(self):
-        """Test AgentRole enum."""
+        """Test AgentRole enum.
+        
+        Note: Agent count updated from 12 to 14 after FinBERT and FinGPT integration
+        (issue #51). The two new agents are:
+        - FINBERT_SENTIMENT_ANALYST: Quantitative sentiment analysis
+        - FINGPT_GENERATIVE_ANALYST: Qualitative deep-dive analysis
+        """
+        # Test existing roles
         assert AgentRole.FUNDAMENTALS_ANALYST == "fundamentals_analyst"
         assert AgentRole.PORTFOLIO_MANAGER == "portfolio_manager"
-        assert len(list(AgentRole)) == 12
+        
+        # Test new FinBERT and FinGPT roles
+        assert AgentRole.FINBERT_SENTIMENT_ANALYST == "finbert_sentiment_analyst"
+        assert AgentRole.FINGPT_GENERATIVE_ANALYST == "fingpt_generative_analyst"
+        
+        # Updated count: 12 original + 2 new (FinBERT, FinGPT) = 14 total
+        assert len(list(AgentRole)) == 14
 
     def test_sentiment_enum(self):
         """Test Sentiment enum."""
