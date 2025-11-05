@@ -129,6 +129,13 @@ Provide:
 
         self._load_model()
 
+        # Ensure model is loaded before accessing its device
+        if self._model is None:
+            logger.error("FinGPT local model could not be loaded. Returning placeholder response.")
+            return (
+                "FinGPT analysis unavailable: local model could not be loaded. "
+                "Check model path or configuration."
+            )
         # Tokenize input
         inputs = self._tokenizer(prompt, return_tensors="pt").to(self._model.device)
 
