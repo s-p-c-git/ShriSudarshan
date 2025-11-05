@@ -9,7 +9,11 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 
 from ..config import settings
+from ..utils import get_logger
 from .state import TradingSystemState, create_initial_state
+
+
+logger = get_logger(__name__)
 
 
 class TradingWorkflow:
@@ -83,9 +87,11 @@ class TradingWorkflow:
 
         All analysts run concurrently to produce reports.
         """
-        print(f"[Analysis Phase] Analyzing {state['symbol']}")
+        logger.info("Starting analysis phase", symbol=state["symbol"])
 
         from ..agents.market_intelligence import (
+            FinBERTSentimentAnalyst,
+            FinGPTGenerativeAnalyst,
             FundamentalsAnalyst,
             MacroNewsAnalyst,
             SentimentAnalyst,
@@ -98,6 +104,8 @@ class TradingWorkflow:
         macro_news_analyst = MacroNewsAnalyst()
         sentiment_analyst = SentimentAnalyst()
         technical_analyst = TechnicalAnalyst()
+        finbert_analyst = FinBERTSentimentAnalyst()
+        fingpt_analyst = FinGPTGenerativeAnalyst()
 
         # Initialize data providers (shared across analysts)
         market_data_provider = MarketDataProvider()
@@ -113,16 +121,27 @@ class TradingWorkflow:
         }
 
         try:
+            # Fetch news for specialized analysts (done once, outside conditional)
+            news_items = news_provider.get_news(state["symbol"], limit=10)
+            news_texts = [item["title"] + ". " + item.get("summary", "") for item in news_items]
+
+            # Prepare contexts for specialized analysts
+            finbert_context = {**context, "texts": news_texts}
+            fingpt_context = {**context, "texts": news_texts, "analysis_type": "analyze_news"}
+
             # Run all analysts concurrently if enabled
             if settings.enable_concurrent_analysis:
                 import asyncio
 
-                print("  Running analysts concurrently...")
+                logger.info("Running analysts concurrently")
+
                 results = await asyncio.gather(
                     fundamentals_analyst.analyze(context),
                     macro_news_analyst.analyze(context),
                     sentiment_analyst.analyze(context),
                     technical_analyst.analyze(context),
+                    finbert_analyst.analyze(finbert_context),
+                    fingpt_analyst.analyze(fingpt_context),
                     return_exceptions=True,
                 )
 
@@ -131,6 +150,8 @@ class TradingWorkflow:
                 macro_news_report = results[1] if not isinstance(results[1], Exception) else None
                 sentiment_report = results[2] if not isinstance(results[2], Exception) else None
                 technical_report = results[3] if not isinstance(results[3], Exception) else None
+                finbert_report = results[4] if not isinstance(results[4], Exception) else None
+                fingpt_report = results[5] if not isinstance(results[5], Exception) else None
 
                 # Log any errors
                 for i, result in enumerate(results):
@@ -140,16 +161,26 @@ class TradingWorkflow:
                             "MacroNews",
                             "Sentiment",
                             "Technical",
+                            "FinBERT",
+                            "FinGPT",
                         ]
-                        print(f"  ⚠ {analyst_names[i]} Analyst failed: {result}")
+                        logger.warning(
+                            "Analyst failed",
+                            analyst=analyst_names[i],
+                            error=str(result),
+                        )
                         state["errors"].append(f"{analyst_names[i]} analysis failed: {str(result)}")
             else:
                 # Run sequentially
-                print("  Running analysts sequentially...")
+                logger.info("Running analysts sequentially")
+
                 fundamentals_report = await fundamentals_analyst.analyze(context)
                 macro_news_report = await macro_news_analyst.analyze(context)
                 sentiment_report = await sentiment_analyst.analyze(context)
                 technical_report = await technical_analyst.analyze(context)
+
+                finbert_report = await finbert_analyst.analyze(finbert_context)
+                fingpt_report = await fingpt_analyst.analyze(fingpt_context)
 
             # Store reports
             state["analyst_reports"] = {
@@ -157,27 +188,49 @@ class TradingWorkflow:
                 "macro_news": macro_news_report,
                 "sentiment": sentiment_report,
                 "technical": technical_report,
+                "finbert": finbert_report,
+                "fingpt": fingpt_report,
             }
 
-            # Print summary
-            print(
-                f"  ✓ Fundamentals: {fundamentals_report.investment_thesis.value if fundamentals_report else 'failed'}"
+            # Log summary
+            logger.info(
+                "Fundamentals analysis complete",
+                result=fundamentals_report.investment_thesis.value if fundamentals_report else "failed",
             )
-            print(
-                f"  ✓ Macro/News: {macro_news_report.market_sentiment.value if macro_news_report else 'failed'}"
+            logger.info(
+                "Macro/News analysis complete",
+                result=macro_news_report.market_sentiment.value if macro_news_report else "failed",
             )
-            print(
-                f"  ✓ Sentiment: {sentiment_report.social_sentiment.value if sentiment_report else 'failed'}"
+            logger.info(
+                "Sentiment analysis complete",
+                result=sentiment_report.social_sentiment.value if sentiment_report else "failed",
             )
-            print(
-                f"  ✓ Technical: {technical_report.trend_direction.value if technical_report else 'failed'}"
+            logger.info(
+                "Technical analysis complete",
+                result=technical_report.trend_direction.value if technical_report else "failed",
             )
+            if finbert_report:
+                logger.info(
+                    "FinBERT analysis complete",
+                    sentiment=finbert_report.sentiment.value,
+                    score=f"{finbert_report.sentiment_score:.2f}",
+                )
+            else:
+                logger.warning("FinBERT analysis failed")
+
+            if fingpt_report:
+                logger.info(
+                    "FinGPT analysis complete",
+                    insights_count=len(fingpt_report.key_insights),
+                )
+            else:
+                logger.warning("FinGPT analysis failed")
 
             state["analysis_complete"] = True
             state["current_phase"] = "analysis"
 
         except Exception as e:
-            print(f"  ✗ Analysis phase failed: {e}")
+            logger.error("Analysis phase failed", error=str(e))
             state["errors"].append(f"Analysis phase error: {str(e)}")
             state["analysis_complete"] = False
 

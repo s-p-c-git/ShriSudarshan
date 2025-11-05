@@ -22,6 +22,8 @@ This team is responsible for multi-modal data ingestion and initial analysis, mi
  * Macro & News Analyst: Monitors macroeconomic data, central bank policies, geopolitical events, and breaking news to provide a top-down market view.
  * Sentiment Analyst: Gauges market mood by analyzing social media, forums, and news sentiment trends.
  * Technical Analyst: Analyzes price charts and volume data for stocks and their underlying assets to identify patterns, trends, and key support/resistance levels.
+ * **FinBERT Sentiment Analyst** (NEW): Uses the specialized FinBERT model for high-speed, quantitative sentiment analysis of financial news and text, providing precise sentiment scores (-1 to +1).
+ * **FinGPT Generative Analyst** (NEW): Employs FinGPT for deep qualitative analysis, generating insights, risk assessments, and opportunities from financial documents and news.
 b) Strategy & Research Team (The Debaters)
 This is the core reasoning hub where initial analyses are challenged and refined into actionable strategies. It expands on the TradingAgents researcher team concept.
  * Bullish Researcher: Constructs the strongest possible argument for taking long positions or implementing bullish strategies based on the analysts' reports.
@@ -66,6 +68,7 @@ Prerequisites
    * **OpenAI API key** (for GPT-4o, GPT-4o-mini), OR
    * **Anthropic API key** (for Claude 3.5 Sonnet)
  * API keys for your chosen data vendors (e.g., Alpha Vantage)
+ * **PyTorch and Transformers** (for FinBERT and FinGPT agents)
 Installation
  * Clone the repository:
    git clone https://github.com/s-p-c-git/ShriSudarshan.git
@@ -73,6 +76,8 @@ Installation
 
  * Install dependencies:
    pip install -r requirements.txt
+
+   Note: This includes transformers, torch, and other dependencies needed for FinBERT and FinGPT integration.
 
  * Configure your API keys:
    * Rename .env.example to .env.
