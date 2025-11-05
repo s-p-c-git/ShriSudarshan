@@ -236,10 +236,10 @@ class TechnicalAnalyst(BaseAgent):
 - Current Price: ${current_price:.2f}
 - RSI (14): {current_rsi:.2f if current_rsi else 'N/A'}
 - MACD: {current_macd:.4f if current_macd else 'N/A'}
-- 20-day SMA: ${price_data['SMA_20'].iloc[-1]:.2f if 'SMA_20' in price_data.columns else 'N/A'}
-- 50-day SMA: ${price_data['SMA_50'].iloc[-1]:.2f if 'SMA_50' in price_data.columns else 'N/A'}
-- 200-day SMA: ${price_data['SMA_200'].iloc[-1]:.2f if 'SMA_200' in price_data.columns else 'N/A'}
-- ATR: ${price_data['ATR'].iloc[-1]:.2f if 'ATR' in price_data.columns else 'N/A'}
+- 20-day SMA: ${price_data["SMA_20"].iloc[-1]:.2f if 'SMA_20' in price_data.columns else 'N/A'}
+- 50-day SMA: ${price_data["SMA_50"].iloc[-1]:.2f if 'SMA_50' in price_data.columns else 'N/A'}
+- 200-day SMA: ${price_data["SMA_200"].iloc[-1]:.2f if 'SMA_200' in price_data.columns else 'N/A'}
+- ATR: ${price_data["ATR"].iloc[-1]:.2f if 'ATR' in price_data.columns else 'N/A'}
 """
 
             # Construct input for LLM
@@ -254,13 +254,13 @@ TECHNICAL INDICATORS:
 {indicators_text}
 
 SUPPORT LEVELS:
-{', '.join([f'${level:.2f}' for level in support_levels]) if support_levels else 'None identified'}
+{", ".join([f"${level:.2f}" for level in support_levels]) if support_levels else "None identified"}
 
 RESISTANCE LEVELS:
-{', '.join([f'${level:.2f}' for level in resistance_levels]) if resistance_levels else 'None identified'}
+{", ".join([f"${level:.2f}" for level in resistance_levels]) if resistance_levels else "None identified"}
 
 DETECTED PATTERNS:
-{chr(10).join([f'- {pattern}' for pattern in chart_patterns]) if chart_patterns else '- No significant patterns detected'}
+{chr(10).join([f"- {pattern}" for pattern in chart_patterns]) if chart_patterns else "- No significant patterns detected"}
 
 Please provide your technical analysis in JSON format:
 {{

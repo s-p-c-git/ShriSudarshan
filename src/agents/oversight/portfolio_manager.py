@@ -59,8 +59,8 @@ class PortfolioManager(CriticalAgent):
 Make the FINAL decision on whether to approve the trade for {symbol}.
 
 STRATEGY PROPOSAL:
-- Type: {strategy_proposal.strategy_type.value if strategy_proposal else 'N/A'}
-- Direction: {strategy_proposal.direction.value if strategy_proposal else 'N/A'}
+- Type: {strategy_proposal.strategy_type.value if strategy_proposal else "N/A"}
+- Direction: {strategy_proposal.direction.value if strategy_proposal else "N/A"}
 - Expected Return: {strategy_proposal.expected_return if strategy_proposal else 0}%
 - Max Loss: {strategy_proposal.max_loss if strategy_proposal else 0}%
 - Confidence: {strategy_proposal.confidence_score if strategy_proposal else 0}

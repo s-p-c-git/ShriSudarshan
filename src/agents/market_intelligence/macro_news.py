@@ -68,11 +68,11 @@ RECENT NEWS (Past 7 Days):
 {news_text if news_text else "No recent news available"}
 
 NEWS SENTIMENT ANALYSIS:
-- Overall Sentiment: {news_sentiment['sentiment']}
-- Sentiment Score: {news_sentiment['score']:.2f}
-- Positive Articles: {news_sentiment.get('positive_articles', 0)}
-- Negative Articles: {news_sentiment.get('negative_articles', 0)}
-- Neutral Articles: {news_sentiment.get('neutral_articles', 0)}
+- Overall Sentiment: {news_sentiment["sentiment"]}
+- Sentiment Score: {news_sentiment["score"]:.2f}
+- Positive Articles: {news_sentiment.get("positive_articles", 0)}
+- Negative Articles: {news_sentiment.get("negative_articles", 0)}
+- Neutral Articles: {news_sentiment.get("neutral_articles", 0)}
 
 Please analyze:
 1. Key macro themes affecting this stock and its sector

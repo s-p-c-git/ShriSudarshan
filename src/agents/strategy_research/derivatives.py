@@ -87,10 +87,10 @@ Debate Outcome:
 - Direction: {overall_direction.value}
 
 Latest Bullish Points:
-{bullish_args[-1].argument[:300] if bullish_args else 'None'}
+{bullish_args[-1].argument[:300] if bullish_args else "None"}
 
 Latest Bearish Points:
-{bearish_args[-1].argument[:300] if bearish_args else 'None'}
+{bearish_args[-1].argument[:300] if bearish_args else "None"}
 """
 
             # Get technical levels for strike selection
@@ -106,10 +106,10 @@ DEBATE SUMMARY:
 {debate_summary}
 
 MARKET DATA:
-- Current Price: ${current_price or 'N/A'}
+- Current Price: ${current_price or "N/A"}
 - Options Available: {has_options}
-- Support Levels: {', '.join([f'${x:.2f}' for x in support_levels])}
-- Resistance Levels: {', '.join([f'${x:.2f}' for x in resistance_levels])}
+- Support Levels: {", ".join([f"${x:.2f}" for x in support_levels])}
+- Resistance Levels: {", ".join([f"${x:.2f}" for x in resistance_levels])}
 
 SENTIMENT:
 - Overall Direction: {overall_direction.value}

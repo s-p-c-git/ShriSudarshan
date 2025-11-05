@@ -59,44 +59,44 @@ class FundamentalsAnalyst(BaseAgent):
 Analyze the fundamental data for {symbol} and provide a comprehensive investment analysis.
 
 COMPANY INFORMATION:
-- Name: {info.get('longName', 'N/A')}
-- Sector: {fundamentals.get('sector', 'N/A')}
-- Industry: {fundamentals.get('industry', 'N/A')}
-- Current Price: ${current_price or 'N/A'}
+- Name: {info.get("longName", "N/A")}
+- Sector: {fundamentals.get("sector", "N/A")}
+- Industry: {fundamentals.get("industry", "N/A")}
+- Current Price: ${current_price or "N/A"}
 
 VALUATION METRICS:
-- Market Cap: ${fundamentals.get('market_cap', 'N/A')}
-- Enterprise Value: ${fundamentals.get('enterprise_value', 'N/A')}
-- P/E Ratio (Trailing): {fundamentals.get('trailing_pe', 'N/A')}
-- P/E Ratio (Forward): {fundamentals.get('forward_pe', 'N/A')}
-- PEG Ratio: {fundamentals.get('peg_ratio', 'N/A')}
-- Price to Book: {fundamentals.get('price_to_book', 'N/A')}
-- Price to Sales: {fundamentals.get('price_to_sales', 'N/A')}
+- Market Cap: ${fundamentals.get("market_cap", "N/A")}
+- Enterprise Value: ${fundamentals.get("enterprise_value", "N/A")}
+- P/E Ratio (Trailing): {fundamentals.get("trailing_pe", "N/A")}
+- P/E Ratio (Forward): {fundamentals.get("forward_pe", "N/A")}
+- PEG Ratio: {fundamentals.get("peg_ratio", "N/A")}
+- Price to Book: {fundamentals.get("price_to_book", "N/A")}
+- Price to Sales: {fundamentals.get("price_to_sales", "N/A")}
 
 PROFITABILITY:
-- Profit Margin: {fundamentals.get('profit_margins', 'N/A')}
-- Operating Margin: {fundamentals.get('operating_margins', 'N/A')}
-- Return on Equity: {fundamentals.get('return_on_equity', 'N/A')}
-- Return on Assets: {fundamentals.get('return_on_assets', 'N/A')}
+- Profit Margin: {fundamentals.get("profit_margins", "N/A")}
+- Operating Margin: {fundamentals.get("operating_margins", "N/A")}
+- Return on Equity: {fundamentals.get("return_on_equity", "N/A")}
+- Return on Assets: {fundamentals.get("return_on_assets", "N/A")}
 
 GROWTH:
-- Revenue Growth: {fundamentals.get('revenue_growth', 'N/A')}
-- Earnings Growth: {fundamentals.get('earnings_growth', 'N/A')}
+- Revenue Growth: {fundamentals.get("revenue_growth", "N/A")}
+- Earnings Growth: {fundamentals.get("earnings_growth", "N/A")}
 
 FINANCIAL HEALTH:
-- Debt to Equity: {fundamentals.get('debt_to_equity', 'N/A')}
-- Current Ratio: {fundamentals.get('current_ratio', 'N/A')}
-- Quick Ratio: {fundamentals.get('quick_ratio', 'N/A')}
-- Free Cash Flow: ${fundamentals.get('free_cash_flow', 'N/A')}
+- Debt to Equity: {fundamentals.get("debt_to_equity", "N/A")}
+- Current Ratio: {fundamentals.get("current_ratio", "N/A")}
+- Quick Ratio: {fundamentals.get("quick_ratio", "N/A")}
+- Free Cash Flow: ${fundamentals.get("free_cash_flow", "N/A")}
 
 DIVIDEND:
-- Dividend Yield: {fundamentals.get('dividend_yield', 'N/A')}
-- Payout Ratio: {fundamentals.get('payout_ratio', 'N/A')}
+- Dividend Yield: {fundamentals.get("dividend_yield", "N/A")}
+- Payout Ratio: {fundamentals.get("payout_ratio", "N/A")}
 
 TECHNICAL FACTORS:
-- Beta: {fundamentals.get('beta', 'N/A')}
-- 52 Week High: ${fundamentals.get('52_week_high', 'N/A')}
-- 52 Week Low: ${fundamentals.get('52_week_low', 'N/A')}
+- Beta: {fundamentals.get("beta", "N/A")}
+- 52 Week High: ${fundamentals.get("52_week_high", "N/A")}
+- 52 Week Low: ${fundamentals.get("52_week_low", "N/A")}
 
 Please provide your analysis in the following JSON format:
 {{

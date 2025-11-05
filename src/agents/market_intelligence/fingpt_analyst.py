@@ -35,7 +35,8 @@ class FinGPTGenerativeAnalyst:
         Initialize the FinGPT Generative Analyst.
 
         Args:
-            model_name: Model name/path for FinGPT (e.g., 'FinGPT/fingpt-forecaster_dow30_llama2-7b_lora')
+            model_name: Model name/path for FinGPT
+                (e.g., 'FinGPT/fingpt-forecaster_dow30_llama2-7b_lora')
             use_local: If True, use local model; if False, use API endpoint
         """
         self.role = AgentRole.FINGPT_GENERATIVE_ANALYST
@@ -123,9 +124,7 @@ Provide:
         if not self.use_local:
             # Placeholder for API-based generation
             logger.warning("API-based FinGPT not implemented, returning placeholder")
-            return (
-                "FinGPT analysis placeholder. Configure API endpoint or use local model."
-            )
+            return "FinGPT analysis placeholder. Configure API endpoint or use local model."
 
         self._load_model()
 
@@ -286,9 +285,7 @@ Provide:
             return report
 
         except Exception as e:
-            logger.error(
-                "FinGPT generative analysis failed", symbol=symbol, error=str(e)
-            )
+            logger.error("FinGPT generative analysis failed", symbol=symbol, error=str(e))
 
             return FinGPTGenerativeReport(
                 agent_role=AgentRole.FINGPT_GENERATIVE_ANALYST,
