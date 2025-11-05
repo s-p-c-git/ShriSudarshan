@@ -84,9 +84,9 @@ async def test_finbert_analyst_sentiment_scores(sample_context):
 
     report = await agent.analyze(context)
 
-    assert report.positive_score >= 0.0 and report.positive_score <= 1.0
-    assert report.negative_score >= 0.0 and report.negative_score <= 1.0
-    assert report.neutral_score >= 0.0 and report.neutral_score <= 1.0
+    assert 0.0 <= report.positive_score <= 1.0
+    assert 0.0 <= report.negative_score <= 1.0
+    assert 0.0 <= report.neutral_score <= 1.0
     assert -1.0 <= report.sentiment_score <= 1.0
 
 

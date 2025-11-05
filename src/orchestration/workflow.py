@@ -9,7 +9,11 @@ from typing import Any
 from langgraph.graph import END, StateGraph
 
 from ..config import settings
+from ..utils import get_logger
 from .state import TradingSystemState, create_initial_state
+
+
+logger = get_logger(__name__)
 
 
 class TradingWorkflow:
@@ -83,7 +87,7 @@ class TradingWorkflow:
 
         All analysts run concurrently to produce reports.
         """
-        print(f"[Analysis Phase] Analyzing {state['symbol']}")
+        logger.info("Starting analysis phase", symbol=state["symbol"])
 
         from ..agents.market_intelligence import (
             FinBERTSentimentAnalyst,
@@ -117,19 +121,19 @@ class TradingWorkflow:
         }
 
         try:
+            # Fetch news for specialized analysts (done once, outside conditional)
+            news_items = news_provider.get_news(state["symbol"], limit=10)
+            news_texts = [item["title"] + ". " + item.get("summary", "") for item in news_items]
+
+            # Prepare contexts for specialized analysts
+            finbert_context = {**context, "texts": news_texts}
+            fingpt_context = {**context, "texts": news_texts, "analysis_type": "analyze_news"}
+
             # Run all analysts concurrently if enabled
             if settings.enable_concurrent_analysis:
                 import asyncio
 
-                print("  Running analysts concurrently...")
-
-                # First, get news for FinBERT and FinGPT
-                news_items = news_provider.get_news(state["symbol"], limit=10)
-                news_texts = [item["title"] + ". " + item.get("summary", "") for item in news_items]
-
-                # Prepare contexts for specialized analysts
-                finbert_context = {**context, "texts": news_texts}
-                fingpt_context = {**context, "texts": news_texts, "analysis_type": "analyze_news"}
+                logger.info("Running analysts concurrently")
 
                 results = await asyncio.gather(
                     fundamentals_analyst.analyze(context),
@@ -160,24 +164,20 @@ class TradingWorkflow:
                             "FinBERT",
                             "FinGPT",
                         ]
-                        print(f"  ⚠ {analyst_names[i]} Analyst failed: {result}")
+                        logger.warning(
+                            "Analyst failed",
+                            analyst=analyst_names[i],
+                            error=str(result),
+                        )
                         state["errors"].append(f"{analyst_names[i]} analysis failed: {str(result)}")
             else:
                 # Run sequentially
-                print("  Running analysts sequentially...")
-
-                # Get news for specialized analysts
-                news_items = news_provider.get_news(state["symbol"], limit=10)
-                news_texts = [item["title"] + ". " + item.get("summary", "") for item in news_items]
+                logger.info("Running analysts sequentially")
 
                 fundamentals_report = await fundamentals_analyst.analyze(context)
                 macro_news_report = await macro_news_analyst.analyze(context)
                 sentiment_report = await sentiment_analyst.analyze(context)
                 technical_report = await technical_analyst.analyze(context)
-
-                # Prepare contexts for specialized analysts
-                finbert_context = {**context, "texts": news_texts}
-                fingpt_context = {**context, "texts": news_texts, "analysis_type": "analyze_news"}
 
                 finbert_report = await finbert_analyst.analyze(finbert_context)
                 fingpt_report = await fingpt_analyst.analyze(fingpt_context)
@@ -192,37 +192,45 @@ class TradingWorkflow:
                 "fingpt": fingpt_report,
             }
 
-            # Print summary
-            print(
-                f"  ✓ Fundamentals: {fundamentals_report.investment_thesis.value if fundamentals_report else 'failed'}"
+            # Log summary
+            logger.info(
+                "Fundamentals analysis complete",
+                result=fundamentals_report.investment_thesis.value if fundamentals_report else "failed",
             )
-            print(
-                f"  ✓ Macro/News: {macro_news_report.market_sentiment.value if macro_news_report else 'failed'}"
+            logger.info(
+                "Macro/News analysis complete",
+                result=macro_news_report.market_sentiment.value if macro_news_report else "failed",
             )
-            print(
-                f"  ✓ Sentiment: {sentiment_report.social_sentiment.value if sentiment_report else 'failed'}"
+            logger.info(
+                "Sentiment analysis complete",
+                result=sentiment_report.social_sentiment.value if sentiment_report else "failed",
             )
-            print(
-                f"  ✓ Technical: {technical_report.trend_direction.value if technical_report else 'failed'}"
+            logger.info(
+                "Technical analysis complete",
+                result=technical_report.trend_direction.value if technical_report else "failed",
             )
             if finbert_report:
-                print(
-                    f"  ✓ FinBERT: {finbert_report.sentiment.value} "
-                    f"(score: {finbert_report.sentiment_score:.2f})"
+                logger.info(
+                    "FinBERT analysis complete",
+                    sentiment=finbert_report.sentiment.value,
+                    score=f"{finbert_report.sentiment_score:.2f}",
                 )
             else:
-                print("  ✓ FinBERT: failed")
+                logger.warning("FinBERT analysis failed")
 
             if fingpt_report:
-                print(f"  ✓ FinGPT: {len(fingpt_report.key_insights)} insights")
+                logger.info(
+                    "FinGPT analysis complete",
+                    insights_count=len(fingpt_report.key_insights),
+                )
             else:
-                print("  ✓ FinGPT: failed")
+                logger.warning("FinGPT analysis failed")
 
             state["analysis_complete"] = True
             state["current_phase"] = "analysis"
 
         except Exception as e:
-            print(f"  ✗ Analysis phase failed: {e}")
+            logger.error("Analysis phase failed", error=str(e))
             state["errors"].append(f"Analysis phase error: {str(e)}")
             state["analysis_complete"] = False
 
