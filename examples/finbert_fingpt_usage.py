@@ -6,6 +6,7 @@ for financial sentiment analysis and generative insights.
 """
 
 import asyncio
+
 from src.agents.market_intelligence import (
     FinBERTSentimentAnalyst,
     FinGPTGenerativeAnalyst,
@@ -40,7 +41,7 @@ async def finbert_example():
     print(f"Symbol: {report.symbol}")
     print(f"Overall Sentiment: {report.sentiment.value}")
     print(f"Sentiment Score: {report.sentiment_score:.3f} (range: -1 to +1)")
-    print(f"\nDetailed Scores:")
+    print("\nDetailed Scores:")
     print(f"  Positive: {report.positive_score:.3f}")
     print(f"  Negative: {report.negative_score:.3f}")
     print(f"  Neutral: {report.neutral_score:.3f}")
@@ -61,11 +62,11 @@ async def fingpt_example():
     up 15% year-over-year. iPhone revenue grew 18% to $51.2B, driven by
     strong demand for the new iPhone 15 Pro models. Services revenue
     reached a new record of $21.2B, up 12% YoY.
-    
+
     The company announced a new $100B share repurchase authorization and
     increased the dividend by 8%. Management expressed confidence in the
     upcoming product cycle and expansion in emerging markets.
-    
+
     Gross margin improved to 45.2% from 43.1% a year ago, reflecting
     favorable mix and operational improvements. Operating margin expanded
     180 basis points to 28.5%.
@@ -92,15 +93,15 @@ async def fingpt_example():
         print(f"Symbol: {report.symbol}")
         print(f"Confidence: {report.confidence:.3f}")
 
-        print(f"\nKey Insights:")
+        print("\nKey Insights:")
         for i, insight in enumerate(report.key_insights, 1):
             print(f"  {i}. {insight}")
 
-        print(f"\nRisks Identified:")
+        print("\nRisks Identified:")
         for i, risk in enumerate(report.risks_identified, 1):
             print(f"  {i}. {risk}")
 
-        print(f"\nOpportunities Identified:")
+        print("\nOpportunities Identified:")
         for i, opp in enumerate(report.opportunities_identified, 1):
             print(f"  {i}. {opp}")
 
@@ -143,12 +144,12 @@ async def combined_example():
         }
         analysis_report = await fingpt.analyze(deep_analysis_context)
 
-        print(f"\nDeep Analysis Results:")
+        print("\nDeep Analysis Results:")
         print(f"  Key Insights: {len(analysis_report.key_insights)} identified")
         print(f"  Risks: {len(analysis_report.risks_identified)} identified")
         print(f"  Opportunities: {len(analysis_report.opportunities_identified)} identified")
 
-        print(f"\nActionable Intelligence:")
+        print("\nActionable Intelligence:")
         for insight in analysis_report.key_insights:
             print(f"  • {insight}")
     else:
