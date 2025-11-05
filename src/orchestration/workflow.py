@@ -441,7 +441,7 @@ class TradingWorkflow:
             state["current_phase"] = "risk_assessment"
 
             approval_symbol = "✓" if risk_assessment.approved else "✗"
-            print(f"  {approval_symbol} Risk Assessment: " f"{risk_assessment.recommendation}")
+            print(f"  {approval_symbol} Risk Assessment: {risk_assessment.recommendation}")
             if risk_assessment.risk_warnings:
                 for warning in risk_assessment.risk_warnings[:3]:
                     print(f"    ⚠ {warning}")
@@ -558,9 +558,9 @@ class TradingWorkflow:
         Returns:
             Final state dictionary
         """
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Starting trading workflow for {symbol}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         # Create initial state
         initial_state = create_initial_state(symbol, start_date, end_date)
@@ -568,9 +568,9 @@ class TradingWorkflow:
         # Run the workflow
         final_state = await self.graph.ainvoke(initial_state)
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Workflow completed for {symbol}")
         print(f"Final phase: {final_state.get('current_phase', 'unknown')}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         return final_state
