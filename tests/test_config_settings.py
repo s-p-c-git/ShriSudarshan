@@ -4,9 +4,6 @@ Tests for configuration and settings module.
 
 These tests verify configuration loading and validation.
 """
-import os
-
-
 def test_settings_module_import():
     """Test that settings module can be imported."""
     from src.config import settings
