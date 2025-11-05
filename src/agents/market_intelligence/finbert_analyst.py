@@ -41,9 +41,7 @@ class FinBERTSentimentAnalyst:
 
                 logger.info("Loading FinBERT model", model=self.model_name)
                 self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-                self._model = AutoModelForSequenceClassification.from_pretrained(
-                    self.model_name
-                )
+                self._model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
                 logger.info("FinBERT model loaded successfully")
             except ImportError as e:
                 logger.error(
@@ -153,9 +151,7 @@ class FinBERTSentimentAnalyst:
         symbol = context.get("symbol", "UNKNOWN")
         texts = context.get("texts", [])
 
-        logger.info(
-            "Starting FinBERT sentiment analysis", symbol=symbol, text_count=len(texts)
-        )
+        logger.info("Starting FinBERT sentiment analysis", symbol=symbol, text_count=len(texts))
 
         try:
             # Analyze texts

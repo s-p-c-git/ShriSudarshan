@@ -195,7 +195,9 @@ class TradingWorkflow:
             # Log summary
             logger.info(
                 "Fundamentals analysis complete",
-                result=fundamentals_report.investment_thesis.value if fundamentals_report else "failed",
+                result=(
+                    fundamentals_report.investment_thesis.value if fundamentals_report else "failed"
+                ),
             )
             logger.info(
                 "Macro/News analysis complete",
@@ -328,10 +330,12 @@ class TradingWorkflow:
             state["current_phase"] = "strategy"
 
             print(
-                f"  ✓ Strategy: {strategy_proposal.strategy_type.value} ({strategy_proposal.direction.value})"
+                f"  ✓ Strategy: {strategy_proposal.strategy_type.value} "
+                f"({strategy_proposal.direction.value})"
             )
             print(
-                f"  ✓ Expected Return: {strategy_proposal.expected_return:.1f}%, Max Loss: {strategy_proposal.max_loss:.1f}%"
+                f"  ✓ Expected Return: {strategy_proposal.expected_return:.1f}%, "
+                f"Max Loss: {strategy_proposal.max_loss:.1f}%"
             )
 
         except Exception as e:
@@ -436,9 +440,8 @@ class TradingWorkflow:
             state["risk_approved"] = risk_assessment.approved
             state["current_phase"] = "risk_assessment"
 
-            print(
-                f"  {'✓' if risk_assessment.approved else '✗'} Risk Assessment: {risk_assessment.recommendation}"
-            )
+            approval_symbol = "✓" if risk_assessment.approved else "✗"
+            print(f"  {approval_symbol} Risk Assessment: " f"{risk_assessment.recommendation}")
             if risk_assessment.risk_warnings:
                 for warning in risk_assessment.risk_warnings[:3]:
                     print(f"    ⚠ {warning}")
@@ -475,9 +478,9 @@ class TradingWorkflow:
             state["final_approval"] = portfolio_decision.approved
             state["current_phase"] = "portfolio_decision"
 
-            print(
-                f"  {'✓' if portfolio_decision.approved else '✗'} Portfolio Manager Decision: {'APPROVED' if portfolio_decision.approved else 'REJECTED'}"
-            )
+            approval_symbol = "✓" if portfolio_decision.approved else "✗"
+            decision_text = "APPROVED" if portfolio_decision.approved else "REJECTED"
+            print(f"  {approval_symbol} Portfolio Manager Decision: {decision_text}")
             print(f"    {portfolio_decision.decision_rationale[:100]}...")
 
         except Exception as e:
@@ -501,7 +504,8 @@ class TradingWorkflow:
             print(f"  PAPER TRADING MODE - Simulating {len(execution_plan.orders)} order(s)")
             for i, order in enumerate(execution_plan.orders, 1):
                 print(
-                    f"    Order {i}: {order.side.value} {order.quantity} {order.symbol} @ {order.order_type.value}"
+                    f"    Order {i}: {order.side.value} {order.quantity} "
+                    f"{order.symbol} @ {order.order_type.value}"
                 )
 
             state["orders_submitted"] = True
