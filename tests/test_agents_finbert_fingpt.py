@@ -87,7 +87,7 @@ async def test_finbert_analyst_sentiment_scores(sample_context):
     assert report.positive_score >= 0.0 and report.positive_score <= 1.0
     assert report.negative_score >= 0.0 and report.negative_score <= 1.0
     assert report.neutral_score >= 0.0 and report.neutral_score <= 1.0
-    assert report.sentiment_score >= -1.0 and report.sentiment_score <= 1.0
+    assert -1.0 <= report.sentiment_score <= 1.0
 
 
 @pytest.mark.asyncio
