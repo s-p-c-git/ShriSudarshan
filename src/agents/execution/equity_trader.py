@@ -107,11 +107,11 @@ STRATEGY:
 - Side: {side.value}
 
 MARKET DATA:
-- Current Price: ${current_price or 'N/A'}
-- Bid: ${bid or 'N/A'}
-- Ask: ${ask or 'N/A'}
+- Current Price: ${current_price or "N/A"}
+- Bid: ${bid or "N/A"}
+- Ask: ${ask or "N/A"}
 - Spread: ${spread:.4f} ({slippage_estimate:.3f}%)
-- Volume: {quote.get('volume', 'N/A') if quote else 'N/A'}
+- Volume: {quote.get("volume", "N/A") if quote else "N/A"}
 
 EXECUTION REQUIREMENTS:
 - Minimize slippage and market impact

@@ -75,15 +75,15 @@ class SentimentAnalyst(BaseAgent):
 Analyze the sentiment and market mood for {symbol} based on recent news and data.
 
 SENTIMENT DATA:
-- Overall News Sentiment: {news_sentiment['sentiment']}
-- Sentiment Score: {news_sentiment['score']:.2f} (range: -1 to 1)
-- News Count (7 days): {news_sentiment['news_count']}
-- Positive Articles: {news_sentiment.get('positive_articles', 0)}
-- Negative Articles: {news_sentiment.get('negative_articles', 0)}
-- Neutral Articles: {news_sentiment.get('neutral_articles', 0)}
+- Overall News Sentiment: {news_sentiment["sentiment"]}
+- Sentiment Score: {news_sentiment["score"]:.2f} (range: -1 to 1)
+- News Count (7 days): {news_sentiment["news_count"]}
+- Positive Articles: {news_sentiment.get("positive_articles", 0)}
+- Negative Articles: {news_sentiment.get("negative_articles", 0)}
+- Neutral Articles: {news_sentiment.get("neutral_articles", 0)}
 
 TRENDING TOPICS:
-{', '.join(trending_topics) if trending_topics else 'No clear trends identified'}
+{", ".join(trending_topics) if trending_topics else "No clear trends identified"}
 
 RECENT HEADLINES:
 {chr(10).join([f"- {item['title']}" for item in news_items[:5]])}

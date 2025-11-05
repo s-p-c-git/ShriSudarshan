@@ -62,27 +62,27 @@ class BullishResearcher(BaseAgent):
 Construct a strong BULLISH argument for {symbol} based on the following analyst reports:
 
 FUNDAMENTALS:
-- Investment Thesis: {fundamentals.investment_thesis.value if fundamentals else 'N/A'}
-- Intrinsic Value: ${fundamentals.intrinsic_value if fundamentals and fundamentals.intrinsic_value else 'N/A'}
-- Key Points: {', '.join(fundamentals.key_points if fundamentals else [])}
+- Investment Thesis: {fundamentals.investment_thesis.value if fundamentals else "N/A"}
+- Intrinsic Value: ${fundamentals.intrinsic_value if fundamentals and fundamentals.intrinsic_value else "N/A"}
+- Key Points: {", ".join(fundamentals.key_points if fundamentals else [])}
 - Confidence: {fundamentals.confidence_level if fundamentals else 0}/10
 
 MACRO & NEWS:
-- Market Sentiment: {macro_news.market_sentiment.value if macro_news else 'N/A'}
-- Key Themes: {', '.join(macro_news.macro_themes if macro_news else [])}
+- Market Sentiment: {macro_news.market_sentiment.value if macro_news else "N/A"}
+- Key Themes: {", ".join(macro_news.macro_themes if macro_news else [])}
 - Confidence: {macro_news.confidence_level if macro_news else 0}/10
 
 SENTIMENT:
-- Social Sentiment: {sentiment.social_sentiment.value if sentiment else 'N/A'}
+- Social Sentiment: {sentiment.social_sentiment.value if sentiment else "N/A"}
 - Score: {sentiment.sentiment_score if sentiment else 0:.2f}
-- Trending: {', '.join(sentiment.trending_topics if sentiment else [])}
+- Trending: {", ".join(sentiment.trending_topics if sentiment else [])}
 - Confidence: {sentiment.confidence_level if sentiment else 0}/10
 
 TECHNICAL:
-- Trend: {technical.trend_direction.value if technical else 'N/A'}
-- Support: {', '.join([f'${x:.2f}' for x in (technical.support_levels if technical else [])])}
-- Resistance: {', '.join([f'${x:.2f}' for x in (technical.resistance_levels if technical else [])])}
-- Patterns: {', '.join(technical.chart_patterns if technical else [])}
+- Trend: {technical.trend_direction.value if technical else "N/A"}
+- Support: {", ".join([f"${x:.2f}" for x in (technical.support_levels if technical else [])])}
+- Resistance: {", ".join([f"${x:.2f}" for x in (technical.resistance_levels if technical else [])])}
+- Patterns: {", ".join(technical.chart_patterns if technical else [])}
 - Confidence: {technical.confidence_level if technical else 0}/10
 
 Build your BULLISH case with:
@@ -112,7 +112,7 @@ Provide your argument in JSON format:
 This is debate round {round_number} for {symbol}.
 
 PREVIOUS BEARISH ARGUMENT:
-{latest_bearish.argument if latest_bearish else 'No bearish argument yet'}
+{latest_bearish.argument if latest_bearish else "No bearish argument yet"}
 
 COUNTER these bearish points while strengthening your BULLISH case:
 

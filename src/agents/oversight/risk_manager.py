@@ -86,7 +86,7 @@ class RiskManager(CriticalAgent):
                 )
             if not sector_ok:
                 risk_warnings.append(
-                    f"Sector concentration {sector_concentration*100:.1f}% exceeds {settings.max_sector_concentration*100:.0f}%"
+                    f"Sector concentration {sector_concentration * 100:.1f}% exceeds {settings.max_sector_concentration * 100:.0f}%"
                 )
 
             # Additional qualitative risk assessment
@@ -121,7 +121,7 @@ CHECKS:
 - Sector Check: {"PASS" if sector_ok else "FAIL"}
 
 WARNINGS:
-{chr(10).join([f'- {w}' for w in risk_warnings]) if risk_warnings else '- None'}
+{chr(10).join([f"- {w}" for w in risk_warnings]) if risk_warnings else "- None"}
 
 As Risk Manager, provide your assessment in JSON format:
 {{
