@@ -187,7 +187,7 @@ Provide:
                 continue
 
             # Add to appropriate list
-            if line.startswith(("- ", "* ", "• ")) or line[0].isdigit():
+            if line.startswith(("- ", "* ", "• ")) or (line and line[0].isdigit()):
                 clean_line = line.lstrip("-*•0123456789. ").strip()
                 if current_section == "insights":
                     insights.append(clean_line)
