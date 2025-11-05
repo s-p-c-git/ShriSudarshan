@@ -4,7 +4,6 @@ Tests for configuration and settings module.
 
 These tests verify configuration loading and validation.
 """
-import pytest
 import os
 
 
