@@ -34,24 +34,24 @@ jobs:
       - name: Enforce minimum coverage
         run: |
           python - <<EOF
-          import xml.etree.ElementTree as ET
-          import sys
-          
-          try:
-              root = ET.parse('coverage.xml')
-              line_rate = float(root.getroot().attrib.get('line-rate', '0'))
-              if line_rate < 0.40:
-                  print('Coverage below 40%')
-                  sys.exit(1)
-              else:
-                  print('Coverage OK')
-          except FileNotFoundError:
-              print('Error: coverage.xml not found')
-              sys.exit(2)
-          except ET.ParseError:
-              print('Error: Malformed coverage.xml')
-              sys.exit(3)
-          except Exception as e:
-              print(f'Unexpected error while checking coverage: {e}')
-              sys.exit(4)
-          EOF
+import xml.etree.ElementTree as ET
+import sys
+
+try:
+    root = ET.parse('coverage.xml')
+    line_rate = float(root.getroot().attrib.get('line-rate', '0'))
+    if line_rate < 0.40:
+        print('Coverage below 40%')
+        sys.exit(1)
+    else:
+        print('Coverage OK')
+except FileNotFoundError:
+    print('Error: coverage.xml not found')
+    sys.exit(2)
+except ET.ParseError:
+    print('Error: Malformed coverage.xml')
+    sys.exit(3)
+except Exception as e:
+    print(f'Unexpected error while checking coverage: {e}')
+    sys.exit(4)
+EOF
