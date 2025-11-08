@@ -6,6 +6,7 @@ from typing import Any
 from ...config import settings
 from ...config.prompts import RISK_MANAGER_PROMPT
 from ...data.schemas import (
+    AgentReport,
     AgentRole,
     RiskAssessment,
     StrategyProposal,
@@ -30,6 +31,27 @@ class RiskManager(CriticalAgent):
             role=AgentRole.RISK_MANAGER,
             system_prompt=RISK_MANAGER_PROMPT,
             temperature=0.3,  # Low temperature for conservative risk assessment
+        )
+
+    async def analyze(self, context: dict[str, Any]) -> AgentReport:
+        """
+        Main entry point - delegates to assess_risk.
+
+        Args:
+            context: Contains strategy_proposal, execution_plan, portfolio_state
+
+        Returns:
+            AgentReport with risk assessment details
+        """
+        assessment = await self.assess_risk(context)
+        symbol = context.get("symbol", "UNKNOWN")
+
+        return AgentReport(
+            agent_role=self.role,
+            symbol=symbol,
+            summary=f"Risk assessment: {'APPROVED' if assessment.approved else 'REJECTED'}",
+            confidence=0.9,
+            metadata={"risk_assessment": assessment.model_dump()},
         )
 
     async def assess_risk(self, context: dict[str, Any]) -> RiskAssessment:
