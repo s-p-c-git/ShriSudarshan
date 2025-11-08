@@ -287,6 +287,7 @@ Please provide your technical analysis in JSON format:
                 parsed = json.loads(json_str)
 
                 trend_str = parsed.get("trend_direction", trend_desc).lower()
+                key_points = parsed.get("key_points", [])
                 pattern_interp = parsed.get("chart_patterns_interpretation", chart_patterns)
                 confidence_level = parsed.get("confidence_level", 6)
                 analysis_summary = parsed.get("analysis_summary", response[:500])
