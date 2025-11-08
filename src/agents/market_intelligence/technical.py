@@ -7,7 +7,7 @@ import pandas as pd
 
 from ...config.prompts import TECHNICAL_ANALYST_PROMPT
 from ...data.providers import MarketDataProvider
-from ...data.schemas import AgentRole, Sentiment, TechnicalReport, TrendDirection
+from ...data.schemas import AgentRole, TechnicalReport, TrendDirection
 from ...utils import get_logger
 from ..base import BaseAgent
 
@@ -287,7 +287,6 @@ Please provide your technical analysis in JSON format:
                 parsed = json.loads(json_str)
 
                 trend_str = parsed.get("trend_direction", trend_desc).lower()
-                key_points = parsed.get("key_points", [])
                 pattern_interp = parsed.get("chart_patterns_interpretation", chart_patterns)
                 confidence_level = parsed.get("confidence_level", 6)
                 analysis_summary = parsed.get("analysis_summary", response[:500])
@@ -303,7 +302,6 @@ Please provide your technical analysis in JSON format:
             except (json.JSONDecodeError, KeyError, IndexError) as e:
                 logger.warning("Failed to parse LLM response, using defaults", error=str(e))
                 final_trend = trend_direction
-                key_points = [f"Trend: {trend_desc}"]
                 pattern_interp = chart_patterns
                 confidence_level = 6
                 analysis_summary = response[:500]
