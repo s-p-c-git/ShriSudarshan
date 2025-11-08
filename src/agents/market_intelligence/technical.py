@@ -7,7 +7,7 @@ import pandas as pd
 
 from ...config.prompts import TECHNICAL_ANALYST_PROMPT
 from ...data.providers import MarketDataProvider
-from ...data.schemas import AgentRole, Sentiment, TechnicalReport
+from ...data.schemas import AgentRole, TechnicalReport, TrendDirection
 from ...utils import get_logger
 from ..base import BaseAgent
 
@@ -208,13 +208,13 @@ class TechnicalAnalyst(BaseAgent):
                 sma200 = price_data["SMA_200"].iloc[-1]
 
                 if current_price > sma50 > sma200:
-                    trend_direction = Sentiment.BULLISH
+                    trend_direction = TrendDirection.UPTREND
                     trend_desc = "uptrend"
                 elif current_price < sma50 < sma200:
-                    trend_direction = Sentiment.BEARISH
+                    trend_direction = TrendDirection.DOWNTREND
                     trend_desc = "downtrend"
                 else:
-                    trend_direction = Sentiment.NEUTRAL
+                    trend_direction = TrendDirection.SIDEWAYS
                     trend_desc = "sideways"
             else:
                 # Fallback to simple price momentum
@@ -222,13 +222,13 @@ class TechnicalAnalyst(BaseAgent):
                     price_data["Close"].iloc[-1] - price_data["Close"].iloc[-20]
                 ) / price_data["Close"].iloc[-20]
                 if price_change > 0.05:
-                    trend_direction = Sentiment.BULLISH
+                    trend_direction = TrendDirection.UPTREND
                     trend_desc = "uptrend"
                 elif price_change < -0.05:
-                    trend_direction = Sentiment.BEARISH
+                    trend_direction = TrendDirection.DOWNTREND
                     trend_desc = "downtrend"
                 else:
-                    trend_direction = Sentiment.NEUTRAL
+                    trend_direction = TrendDirection.SIDEWAYS
                     trend_desc = "sideways"
 
             # Prepare indicators for LLM
@@ -294,16 +294,15 @@ Please provide your technical analysis in JSON format:
 
                 # Map trend
                 if trend_str in ["bullish", "uptrend", "up"]:
-                    final_trend = Sentiment.BULLISH
+                    final_trend = TrendDirection.UPTREND
                 elif trend_str in ["bearish", "downtrend", "down"]:
-                    final_trend = Sentiment.BEARISH
+                    final_trend = TrendDirection.DOWNTREND
                 else:
-                    final_trend = Sentiment.NEUTRAL
+                    final_trend = TrendDirection.SIDEWAYS
 
             except (json.JSONDecodeError, KeyError, IndexError) as e:
                 logger.warning("Failed to parse LLM response, using defaults", error=str(e))
                 final_trend = trend_direction
-                key_points = [f"Trend: {trend_desc}"]
                 pattern_interp = chart_patterns
                 confidence_level = 6
                 analysis_summary = response[:500]
@@ -329,9 +328,8 @@ Please provide your technical analysis in JSON format:
 
             report = TechnicalReport(
                 symbol=symbol,
-                confidence_level=confidence_level,
-                analysis=analysis_summary,
-                key_points=key_points,
+                confidence=confidence_level / 10.0,  # Convert 1-10 to 0.0-1.0
+                summary=analysis_summary,
                 trend_direction=final_trend,
                 support_levels=support_levels,
                 resistance_levels=resistance_levels,
@@ -353,10 +351,9 @@ Please provide your technical analysis in JSON format:
 
             return TechnicalReport(
                 symbol=symbol,
-                confidence_level=1,
-                analysis=f"Analysis failed: {str(e)}",
-                key_points=["Analysis error occurred"],
-                trend_direction=Sentiment.NEUTRAL,
+                confidence=0.1,  # Low confidence on error
+                summary=f"Analysis failed: {str(e)}",
+                trend_direction=TrendDirection.SIDEWAYS,
                 support_levels=[],
                 resistance_levels=[],
                 indicators={},

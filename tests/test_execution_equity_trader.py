@@ -10,7 +10,14 @@ import pytest
 # Try to import, skip tests if dependencies missing
 pytest.importorskip("yfinance")
 
-from src.data.schemas import Order, OrderSide, OrderType, StrategyProposal, StrategyType, TradeDirection
+from src.data.schemas import (
+    Order,
+    OrderSide,
+    OrderType,
+    StrategyProposal,
+    StrategyType,
+    TradeDirection,
+)
 
 
 class DummyBroker:
@@ -57,7 +64,7 @@ def sample_strategy_proposal():
 async def test_equity_trader_import():
     """Test that EquityTrader can be imported."""
     from src.agents.execution import equity_trader
-    
+
     assert hasattr(equity_trader, "EquityTrader")
 
 
@@ -65,7 +72,7 @@ async def test_equity_trader_import():
 async def test_equity_trader_instantiation():
     """Test that EquityTrader can be instantiated."""
     from src.agents.execution.equity_trader import EquityTrader
-    
+
     trader = EquityTrader()
     assert trader is not None
     assert hasattr(trader, "role")
@@ -75,18 +82,18 @@ async def test_equity_trader_instantiation():
 async def test_equity_trader_has_create_execution_plan(sample_context, sample_strategy_proposal):
     """Test that EquityTrader has create_execution_plan method."""
     from src.agents.execution.equity_trader import EquityTrader
-    
+
     trader = EquityTrader()
-    
+
     # Check if the method exists
     if hasattr(trader, "create_execution_plan"):
         # Add strategy_proposal to context
         context = sample_context.copy()
         context["strategy_proposal"] = sample_strategy_proposal
-        
+
         # Try to create an execution plan
         plan = await trader.create_execution_plan(context)
-        
+
         # Basic assertions about the plan
         assert plan is not None
         assert hasattr(plan, "symbol")
@@ -97,9 +104,9 @@ async def test_equity_trader_has_create_execution_plan(sample_context, sample_st
 async def test_build_order_payload_methods(dummy_broker):
     """Test payload builder methods if they exist."""
     from src.agents.execution.equity_trader import EquityTrader
-    
+
     trader = EquityTrader()
-    
+
     # Create a minimal order schema
     order = Order(
         symbol="AAPL",
@@ -120,9 +127,9 @@ async def test_build_order_payload_methods(dummy_broker):
 async def test_execute_order_if_exists(dummy_broker):
     """Test execute_order method if it exists."""
     from src.agents.execution.equity_trader import EquityTrader
-    
+
     trader = EquityTrader()
-    
+
     # Create a minimal order
     order = Order(
         symbol="AAPL",
@@ -143,9 +150,9 @@ async def test_execute_order_if_exists(dummy_broker):
 async def test_modify_order_if_exists(dummy_broker):
     """Test modify_order method if it exists."""
     from src.agents.execution.equity_trader import EquityTrader
-    
+
     trader = EquityTrader()
-    
+
     # Simulate modify path if available
     if hasattr(trader, "modify_order"):
         resp = trader.modify_order("ORD-1", {"price": 155.0})

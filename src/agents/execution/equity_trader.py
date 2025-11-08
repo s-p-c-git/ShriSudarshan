@@ -6,6 +6,7 @@ from typing import Any
 from ...config.prompts import EQUITY_TRADER_PROMPT
 from ...data.providers import MarketDataProvider
 from ...data.schemas import (
+    AgentReport,
     AgentRole,
     ExecutionPlan,
     Order,
@@ -35,6 +36,27 @@ class EquityTrader(BaseAgent):
             temperature=0.5,
         )
         self.market_data_provider = MarketDataProvider()
+
+    async def analyze(self, context: dict[str, Any]) -> AgentReport:
+        """
+        Main entry point - delegates to create_execution_plan.
+
+        Args:
+            context: Contains strategy_proposal, symbol, etc.
+
+        Returns:
+            AgentReport with execution plan details
+        """
+        plan = await self.create_execution_plan(context)
+        symbol = context.get("symbol", "UNKNOWN")
+
+        return AgentReport(
+            agent_role=self.role,
+            symbol=symbol,
+            summary=f"Execution plan created with {len(plan.orders)} order(s)",
+            confidence=0.8,
+            metadata={"execution_plan": plan.model_dump()},
+        )
 
     async def create_execution_plan(self, context: dict[str, Any]) -> ExecutionPlan:
         """
