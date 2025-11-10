@@ -20,6 +20,7 @@ env/
 *.swp
 *.swo
 *~
+.DS_Store
 
 # Environment files (copy .env.example instead)
 .env
@@ -49,8 +50,16 @@ htmlcov/
 .gitattributes
 .github/
 
-# Docker files themselves (in docker/ subdirectory)
-docker/
+# Docker files themselves
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose*.yml
+.dockerignore
+
+# Documentation (included selectively via COPY in Dockerfile)
+*.md
+!README.md
 
 # Build and distribution
 build/
@@ -84,28 +93,3 @@ temp/
 # OS files
 .DS_Store
 Thumbs.db
-
-# Documentation markdown files (except those needed in container)
-ANTHROPIC_INTEGRATION_SUMMARY.md
-APPROACH.md
-FINBERT_FINGPT_IMPLEMENTATION_SUMMARY.md
-FORMATTING_IMPLEMENTATION.md
-IMPLEMENTATION_COMPLETE.md
-IMPLEMENTATION_SUMMARY.md
-INDEX.md
-MOCK_AGENTS_SUMMARY.md
-PHASE2_COMPLETE.md
-QUICK_REFERENCE.md
-TEST_COVERAGE_SUMMARY.md
-VISUAL_OVERVIEW.md
-DOCKER.md
-DOCKER_EXAMPLES.md
-
-# Test script
-test_docker_setup.sh
-
-# Root Docker files (we use docker/ subdirectory files)
-Dockerfile
-Dockerfile.*
-docker-compose.yml
-docker-compose*.yml
