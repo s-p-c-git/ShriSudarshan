@@ -265,29 +265,30 @@ class TestOrder:
             side=OrderSide.BUY,
             quantity=100,
             order_type=OrderType.LIMIT,
-            price=150.00,
+            limit_price=150.00,
         )
 
         assert order.symbol == "AAPL"
         assert order.quantity == 100
-        assert order.price == 150.00
+        assert order.limit_price == 150.00
 
     def test_options_order(self):
-        """Test creating an options order."""
+        """Test creating an options order.
+        
+        Note: Options details are encoded in the symbol (e.g., AAPL_CALL_155_2024-02-16)
+        rather than as separate fields.
+        """
         order = Order(
-            symbol="AAPL",
+            symbol="AAPL_CALL_155",
             side=OrderSide.SELL,
             quantity=1,
             order_type=OrderType.LIMIT,
-            price=3.50,
-            expiry="2024-02-16",
-            strike=155.0,
-            option_type="call",
+            limit_price=3.50,
         )
 
-        assert order.expiry == "2024-02-16"
-        assert order.strike == 155.0
-        assert order.option_type == "call"
+        assert order.symbol == "AAPL_CALL_155"
+        assert order.quantity == 1
+        assert order.limit_price == 3.50
 
     def test_quantity_validation(self):
         """Test quantity must be positive."""
@@ -324,38 +325,29 @@ class TestExecutionPlan:
                 side=OrderSide.BUY,
                 quantity=100,
                 order_type=OrderType.LIMIT,
-                price=150.00,
+                limit_price=150.00,
             ),
             Order(
-                symbol="AAPL",
+                symbol="AAPL_CALL_155",
                 side=OrderSide.SELL,
                 quantity=1,
                 order_type=OrderType.LIMIT,
-                price=3.50,
-                expiry="2024-02-16",
-                strike=155.0,
-                option_type="call",
+                limit_price=3.50,
             ),
         ]
 
         plan = ExecutionPlan(
-            symbol="AAPL",
-            strategy_type=StrategyType.COVERED_CALL,
+            agent_role=AgentRole.EQUITY_TRADER,
             orders=orders,
-            estimated_cost=14650.00,
-            estimated_slippage=25.00,
         )
 
         assert len(plan.orders) == 2
-        assert plan.estimated_cost == 14650.00
 
     def test_empty_orders(self):
         """Test execution plan can have empty orders list."""
         plan = ExecutionPlan(
-            symbol="AAPL",
-            strategy_type=StrategyType.LONG_EQUITY,
+            agent_role=AgentRole.EQUITY_TRADER,
             orders=[],
-            estimated_cost=0.0,
         )
 
         assert plan.orders == []

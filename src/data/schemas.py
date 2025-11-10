@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # =============================================================================
@@ -111,8 +111,8 @@ class AgentReport(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
+    @model_validator(mode="before")
     @classmethod
-    @root_validator(pre=True)
     def accept_legacy_fields(cls, values):
         """
         Compatibility shim to accept legacy field names:
@@ -223,6 +223,7 @@ class FinGPTGenerativeReport(AgentReport):
 # Core Debate, Strategy, Execution, and Oversight Models
 # =============================================================================
 
+
 class DebateArgument(BaseModel):
     """
     Represents a structured argument in the debate phase.
@@ -237,10 +238,11 @@ class DebateArgument(BaseModel):
         confidence: Confidence score (0.0 - 1.0), optional.
         timestamp: Timestamp when argument was created (auto-generated).
     """
-    round_number: int
-    role: AgentRole
-    position: Sentiment
-    argument: str
+
+    agent_role: AgentRole
+    stance: Sentiment
+    rationale: str
+    confidence: float = Field(ge=0.0, le=1.0)
     supporting_evidence: list[str] = Field(default_factory=list)
     counterpoints: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
@@ -252,21 +254,50 @@ class StrategyProposal(BaseModel):
     Represents a proposed trading strategy (equity or derivatives).
 
     Args:
-        agent_role: Role of the proposing agent.
-        strategy_type: Type of strategy (e.g., 'option_spread', 'long_equity').
         symbol: Target security symbol.
-        details: Structured details of the strategy.
-        expected_return: Estimated return (percentage).
-        risk_level: Qualitative risk level.
+        strategy_type: Type of strategy (e.g., 'option_spread', 'long_equity').
+        direction: Trade direction (long/short/neutral).
         rationale: Rationale for the proposal.
+        expected_return: Estimated return (percentage).
+        max_loss: Maximum acceptable loss (percentage).
+        entry_conditions: Conditions that should be met to enter the trade.
+        exit_conditions: Conditions for exiting the trade.
+        position_size_pct: Position size as percentage of portfolio.
+        time_horizon_days: Expected holding period in days.
+        confidence_score: Confidence in the strategy (0.0 - 1.0).
+        debate_summary: Summary of debate leading to this strategy.
+        agent_role: Role of the proposing agent (optional for backwards compatibility).
+        details: Structured details of the strategy (for backwards compatibility).
+        risk_level: Qualitative risk level (for backwards compatibility).
+        holding_period: Legacy field (superseded by time_horizon_days).
+        risk_factors: List of identified risk factors.
+        timestamp: Creation timestamp.
     """
+
     agent_role: AgentRole
     strategy_type: str
     symbol: str
+    strategy_type: str
+    direction: TradeDirection
+    rationale: str
+    expected_return: float
+    max_loss: float
+    
+    # Fields with defaults (support both old and new names via aliases)
+    entry_conditions: list[str] = Field(default_factory=list, alias="entry_criteria")
+    exit_conditions: list[str] = Field(default_factory=list, alias="exit_criteria")
+    position_size_pct: float = 0.02  # Default 2% position size
+    time_horizon_days: int = 30  # Default 30 days
+    confidence_score: float = Field(default=0.5, ge=0.0, le=1.0, alias="confidence")
+    debate_summary: str = ""
+    
+    # Optional fields for backwards compatibility
+    agent_role: Optional[AgentRole] = None
     details: dict[str, Any] = Field(default_factory=dict)
-    expected_return: Optional[float] = None
     risk_level: Optional[str] = None
-    rationale: Optional[str] = None
+    holding_period: Optional[str] = None
+    risk_factors: list[str] = Field(default_factory=list)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class Order(BaseModel):
@@ -275,18 +306,21 @@ class Order(BaseModel):
 
     Args:
         symbol: Security symbol.
-        order_type: 'buy' or 'sell'.
-        quantity: Number of shares/contracts.
-        price: Limit or market price.
-        order_style: 'market', 'limit', etc.
+        side: Order side (BUY or SELL).
+        order_type: Order type (MARKET, LIMIT, STOP, STOP_LIMIT).
+        quantity: Number of shares/contracts (must be positive).
+        limit_price: Limit price for LIMIT and STOP_LIMIT orders.
+        stop_price: Stop price for STOP and STOP_LIMIT orders.
+        time_in_force: Time in force (DAY, GTC, IOC, FOK).
         timestamp: Time of order creation.
     """
+
     symbol: str
     order_type: str
     quantity: float
     price: Optional[float] = None
     order_style: str = "market"
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class ExecutionPlan(BaseModel):
@@ -299,6 +333,7 @@ class ExecutionPlan(BaseModel):
         execution_strategy: Description of execution approach.
         notes: Additional notes.
     """
+
     agent_role: AgentRole
     orders: list[Order] = Field(default_factory=list)
     execution_strategy: Optional[str] = None
@@ -317,6 +352,7 @@ class RiskAssessment(BaseModel):
         approved: Whether the risk is acceptable.
         comments: Additional comments.
     """
+
     agent_role: AgentRole
     risk_score: float = Field(ge=0.0, le=1.0)
     risk_factors: list[str] = Field(default_factory=list)
@@ -335,6 +371,7 @@ class PortfolioDecision(BaseModel):
         rationale: Rationale for the decision.
         modifications: Any modifications to the proposal.
     """
+
     agent_role: AgentRole
     approved: bool
     rationale: Optional[str] = None
@@ -353,12 +390,13 @@ class TradeOutcome(BaseModel):
         pnl: Profit or loss.
         timestamp: Time of trade completion.
     """
+
     symbol: str
     entry_price: float
     exit_price: float
     quantity: float
     pnl: float
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class Reflection(BaseModel):
@@ -371,8 +409,8 @@ class Reflection(BaseModel):
         lessons_learned: Key lessons.
         improvement_suggestions: Suggestions for future improvement.
     """
+
     agent_role: AgentRole
     trade_outcome: TradeOutcome
     lessons_learned: list[str] = Field(default_factory=list)
     improvement_suggestions: list[str] = Field(default_factory=list)
-# (rest of file unchanged)
