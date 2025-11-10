@@ -111,6 +111,7 @@ class AgentReport(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
+    @classmethod
     @root_validator(pre=True)
     def accept_legacy_fields(cls, values):
         """
