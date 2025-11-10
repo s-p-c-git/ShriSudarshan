@@ -272,10 +272,12 @@ class Order(BaseModel):
 
     Args:
         symbol: Security symbol.
-        order_type: 'buy' or 'sell'.
-        quantity: Number of shares/contracts.
-        price: Limit or market price.
-        order_style: 'market', 'limit', etc.
+        side: Order side (BUY or SELL).
+        order_type: Order type (MARKET, LIMIT, STOP, STOP_LIMIT).
+        quantity: Number of shares/contracts (must be positive).
+        limit_price: Limit price for LIMIT and STOP_LIMIT orders.
+        stop_price: Stop price for STOP and STOP_LIMIT orders.
+        time_in_force: Time in force (DAY, GTC, IOC, FOK).
         timestamp: Time of order creation.
     """
 
