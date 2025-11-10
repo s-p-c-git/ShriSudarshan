@@ -1,0 +1,92 @@
+services:
+  # Main ShriSudarshan application
+  shri-sudarshan:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shri-sudarshan:latest
+    container_name: shri-sudarshan-app
+    
+    # Environment configuration
+    env_file:
+      - .env
+    
+    # Volume mounts for data persistence
+    volumes:
+      # Persistent data storage
+      - ./data:/app/data
+      # Mount source for development (comment out for production)
+      - ./src:/app/src
+      # Configuration
+      - ./.env:/app/.env:ro
+    
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    
+    # Network configuration
+    networks:
+      - shri-network
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Override default command - example usage
+    # command: ["--symbol", "AAPL", "--log-level", "INFO"]
+    
+    # For interactive usage, use stdin_open and tty
+    stdin_open: true
+    tty: true
+
+  # Optional: PostgreSQL database (for production episodic memory)
+  postgres:
+    image: postgres:15-alpine
+    container_name: shri-sudarshan-postgres
+    environment:
+      POSTGRES_DB: shri_sudarshan
+      POSTGRES_USER: shri_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - shri-network
+    restart: unless-stopped
+    profiles:
+      - production
+      - full
+
+  # Optional: Redis (for distributed working memory)
+  redis:
+    image: redis:7-alpine
+    container_name: shri-sudarshan-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - shri-network
+    restart: unless-stopped
+    profiles:
+      - production
+      - full
+
+# Named volumes for data persistence
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+# Network configuration
+networks:
+  shri-network:
+    driver: bridge
