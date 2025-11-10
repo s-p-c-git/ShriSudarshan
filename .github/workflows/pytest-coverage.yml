@@ -33,7 +33,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Enforce minimum coverage
         run: |
-          python - <<'PY'
+          python - <<EOF
 import xml.etree.ElementTree as ET
 import sys
 
@@ -54,4 +54,4 @@ except ET.ParseError:
 except Exception as e:
     print(f'Unexpected error while checking coverage: {e}')
     sys.exit(4)
-PY
+EOF
