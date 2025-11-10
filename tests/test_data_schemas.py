@@ -191,7 +191,8 @@ class TestDebateArgument:
     def test_valid_argument(self):
         """Test creating a valid debate argument."""
         arg = DebateArgument(
-            agent_role=AgentRole.BULLISH_RESEARCHER,
+            role=AgentRole.BULLISH_RESEARCHER,
+            position=Sentiment.BULLISH,
             round_number=1,
             argument="Strong buy signal",
             supporting_evidence=["High momentum", "Positive fundamentals"],
@@ -205,7 +206,8 @@ class TestDebateArgument:
     def test_timestamp_auto_generated(self):
         """Test that timestamp is auto-generated."""
         arg = DebateArgument(
-            agent_role=AgentRole.BULLISH_RESEARCHER,
+            role=AgentRole.BULLISH_RESEARCHER,
+            position=Sentiment.BULLISH,
             round_number=1,
             argument="Test",
         )
