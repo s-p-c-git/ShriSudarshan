@@ -242,14 +242,16 @@ def sample_debate_arguments(sample_symbol):
     """Sample debate arguments."""
     return [
         DebateArgument(
-            agent_role=AgentRole.BULLISH_RESEARCHER,
+            role=AgentRole.BULLISH_RESEARCHER,
+            position=Sentiment.BULLISH,
             round_number=1,
             argument="Strong fundamentals support upward price movement",
             supporting_evidence=["High profit margins", "Growing revenue"],
             confidence=0.8,
         ),
         DebateArgument(
-            agent_role=AgentRole.BEARISH_RESEARCHER,
+            role=AgentRole.BEARISH_RESEARCHER,
+            position=Sentiment.BEARISH,
             round_number=1,
             argument="Valuation metrics suggest overvaluation",
             supporting_evidence=["High P/E ratio", "Market saturation"],

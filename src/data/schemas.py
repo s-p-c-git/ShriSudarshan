@@ -229,11 +229,14 @@ class DebateArgument(BaseModel):
     Represents a structured argument in the debate phase.
 
     Args:
-        agent_role: Role of the agent making the argument.
-        stance: Bullish or bearish stance.
-        rationale: Textual rationale for the argument.
-        confidence: Confidence score (0.0 - 1.0).
+        round_number: The debate round number.
+        role: Role of the agent making the argument.
+        position: Bullish or bearish position.
+        argument: Textual argument content.
         supporting_evidence: List of supporting facts or data.
+        counterpoints: List of counterpoints to opposing arguments.
+        confidence: Confidence score (0.0 - 1.0), optional.
+        timestamp: Timestamp when argument was created (auto-generated).
     """
 
     agent_role: AgentRole
@@ -241,6 +244,9 @@ class DebateArgument(BaseModel):
     rationale: str
     confidence: float = Field(ge=0.0, le=1.0)
     supporting_evidence: list[str] = Field(default_factory=list)
+    counterpoints: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class StrategyProposal(BaseModel):
