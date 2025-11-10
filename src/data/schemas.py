@@ -323,10 +323,12 @@ class Order(BaseModel):
     """
 
     symbol: str
-    order_type: str
-    quantity: float
-    price: Optional[float] = None
-    order_style: str = "market"
+    side: OrderSide
+    order_type: OrderType
+    quantity: int = Field(gt=0)
+    limit_price: Optional[float] = None
+    stop_price: Optional[float] = None
+    time_in_force: str = "DAY"
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
