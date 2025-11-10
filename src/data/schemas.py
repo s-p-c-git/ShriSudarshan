@@ -252,7 +252,6 @@ class DebateArgument(BaseModel):
     agent_role: AgentRole
     stance: Sentiment
     rationale: str
-    confidence: float = Field(ge=0.0, le=1.0)
     supporting_evidence: list[str] = Field(default_factory=list)
     counterpoints: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
