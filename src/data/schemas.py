@@ -284,7 +284,6 @@ class StrategyProposal(BaseModel):
         timestamp: Creation timestamp.
     """
 
-    agent_role: AgentRole
     strategy_type: str
     symbol: str
     strategy_type: str
