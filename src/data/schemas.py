@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, root_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # =============================================================================
@@ -111,8 +111,8 @@ class AgentReport(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
+    @model_validator(mode="before")
     @classmethod
-    @root_validator(pre=True)
     def accept_legacy_fields(cls, values):
         """
         Compatibility shim to accept legacy field names:
@@ -282,13 +282,11 @@ class Order(BaseModel):
     """
 
     symbol: str
-    side: OrderSide
-    order_type: OrderType
-    quantity: int = Field(gt=0)
-    limit_price: Optional[float] = None
-    stop_price: Optional[float] = None
-    time_in_force: str = "DAY"
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    order_type: str
+    quantity: float
+    price: Optional[float] = None
+    order_style: str = "market"
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class ExecutionPlan(BaseModel):
@@ -364,7 +362,7 @@ class TradeOutcome(BaseModel):
     exit_price: float
     quantity: float
     pnl: float
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class Reflection(BaseModel):
@@ -382,6 +380,3 @@ class Reflection(BaseModel):
     trade_outcome: TradeOutcome
     lessons_learned: list[str] = Field(default_factory=list)
     improvement_suggestions: list[str] = Field(default_factory=list)
-
-
-# (rest of file unchanged)
