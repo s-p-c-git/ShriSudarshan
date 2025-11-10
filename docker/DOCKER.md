@@ -69,6 +69,7 @@ See `make help` for all available commands.
 
 3. **Build and run with Docker Compose**:
    ```bash
+   cd docker
    docker compose build
    docker compose run --rm shri-sudarshan --symbol AAPL
    ```
@@ -76,10 +77,12 @@ See `make help` for all available commands.
 ### Option 3: Using Docker directly
 
 ```bash
-# Build the image
+# Build the image from docker directory
+cd docker
 docker build -t shri-sudarshan:latest .
 
-# Run analysis
+# Run analysis (from project root)
+cd ..
 docker run --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:latest --symbol AAPL
 ```
 
@@ -90,18 +93,21 @@ docker run --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:latest -
 Build the Docker image using the provided Dockerfile:
 
 ```bash
+cd docker
 docker build -t shri-sudarshan:latest .
 ```
 
 ### Build with Custom Tag
 
 ```bash
+cd docker
 docker build -t shri-sudarshan:v0.1.0 .
 ```
 
 ### Build with Docker Compose
 
 ```bash
+cd docker
 docker-compose build
 ```
 
@@ -146,21 +152,25 @@ docker run -d \
 
 **Run analysis (one-time)**:
 ```bash
+cd docker
 docker-compose run --rm shri-sudarshan --symbol AAPL
 ```
 
 **Start services**:
 ```bash
+cd docker
 docker-compose up -d
 ```
 
 **View logs**:
 ```bash
+cd docker
 docker-compose logs -f shri-sudarshan
 ```
 
 **Stop services**:
 ```bash
+cd docker
 docker-compose down
 ```
 
@@ -259,33 +269,41 @@ cp data/episodic_memory.db data/episodic_memory.db.backup
 
 ### Basic Commands
 
+All commands should be run from the `docker/` directory:
+
 **Start all services**:
 ```bash
+cd docker
 docker-compose up
 ```
 
 **Start in background**:
 ```bash
+cd docker
 docker-compose up -d
 ```
 
 **Run one-time analysis**:
 ```bash
+cd docker
 docker-compose run --rm shri-sudarshan --symbol AAPL
 ```
 
 **Stop all services**:
 ```bash
+cd docker
 docker-compose down
 ```
 
 **View logs**:
 ```bash
+cd docker
 docker-compose logs -f
 ```
 
 **Rebuild images**:
 ```bash
+cd docker
 docker-compose build --no-cache
 ```
 
@@ -295,11 +313,13 @@ The docker-compose.yml includes optional PostgreSQL and Redis services.
 
 **Start with PostgreSQL** (for production episodic memory):
 ```bash
+cd docker
 docker-compose --profile production up -d
 ```
 
 **Start with all services** (PostgreSQL + Redis):
 ```bash
+cd docker
 docker-compose --profile full up -d
 ```
 
@@ -353,26 +373,12 @@ To use GPU acceleration for FinBERT and FinGPT models:
 
 ### GPU Dockerfile
 
-Create a `Dockerfile.gpu`:
-
-```dockerfile
-# Use NVIDIA CUDA base image
-FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
-
-# Install Python
-RUN apt-get update && apt-get install -y \
-    python3.11 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Continue with standard Dockerfile instructions...
-# (Copy the rest from the main Dockerfile)
-```
+A GPU-enabled Dockerfile is available at the project root as `Dockerfile.gpu`.
 
 ### Build and Run with GPU
 
 ```bash
-# Build GPU image
+# Build GPU image (from project root)
 docker build -f Dockerfile.gpu -t shri-sudarshan:gpu .
 
 # Run with GPU
@@ -401,7 +407,7 @@ services:
 
 ## CLI Usage Examples
 
-All command-line arguments supported by `main.py` work with Docker.
+All command-line arguments supported by `main.py` work with Docker. Run these commands from the `docker/` directory.
 
 ### Basic Analysis
 
@@ -555,6 +561,7 @@ This can occur in some CI/CD environments or corporate networks with SSL inspect
 
 **View container logs**:
 ```bash
+cd docker
 docker-compose logs -f shri-sudarshan
 ```
 
@@ -575,9 +582,10 @@ docker exec shri-sudarshan-app python -c "from config import settings; print(set
 
 **Run in interactive mode**:
 ```bash
+cd docker
 docker run -it --rm --entrypoint /bin/bash \
-  --env-file .env \
-  -v $(pwd)/data:/app/data \
+  --env-file ../.env \
+  -v $(pwd)/../data:/app/data \
   shri-sudarshan:latest
 ```
 
@@ -587,17 +595,18 @@ docker run -it --rm --entrypoint /bin/bash \
 
 1. **Use specific image tags**:
    ```bash
+   cd docker
    docker build -t shri-sudarshan:v0.1.0 .
    ```
 
 2. **Remove development mounts**:
-   Comment out source code volume in `docker-compose.yml`
+   Comment out source code volume in `docker-compose.yml` (if present)
 
 3. **Use external databases**:
    Configure PostgreSQL instead of SQLite for episodic memory
 
 4. **Set resource limits**:
-   Adjust CPU and memory limits based on workload
+   Adjust CPU and memory limits based on workload in `docker-compose.yml`
 
 5. **Enable restart policies**:
    ```yaml

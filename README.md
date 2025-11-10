@@ -114,21 +114,25 @@ Running the System
 Docker Installation (Alternative)
 For containerized deployment, you can use Docker:
  * Quick start with Docker Compose:
+   cd docker
    docker-compose up -d
    docker-compose run --rm shri-sudarshan --symbol AAPL
 
  * Or build and run manually:
+   cd docker
    docker build -t shri-sudarshan:latest .
+   cd ..
    docker run --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:latest --symbol AAPL
 
  * For GPU support (FinBERT/FinGPT acceleration):
    docker build -f Dockerfile.gpu -t shri-sudarshan:gpu .
    docker run --gpus all --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:gpu --symbol AAPL
 
-See DOCKER.md for complete Docker documentation including:
+See docker/DOCKER.md for complete Docker documentation including:
+ * Prerequisites (Docker 20.10+, Docker Compose 2.0+, 8GB RAM)
  * Detailed setup and configuration
  * Volume management and data persistence
- * Production deployment guidelines
+ * Production deployment guidelines (PostgreSQL, Redis)
  * GPU support instructions
  * Troubleshooting guide
 
