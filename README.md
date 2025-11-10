@@ -111,6 +111,27 @@ Running the System
    cd src
    python main.py --symbol AAPL --start_date 2023-01-01 --end_date 2023-01-31
 
+Docker Installation (Alternative)
+For containerized deployment, you can use Docker:
+ * Quick start with Docker Compose:
+   docker-compose up -d
+   docker-compose run --rm shri-sudarshan --symbol AAPL
+
+ * Or build and run manually:
+   docker build -t shri-sudarshan:latest .
+   docker run --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:latest --symbol AAPL
+
+ * For GPU support (FinBERT/FinGPT acceleration):
+   docker build -f Dockerfile.gpu -t shri-sudarshan:gpu .
+   docker run --gpus all --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:gpu --symbol AAPL
+
+See DOCKER.md for complete Docker documentation including:
+ * Detailed setup and configuration
+ * Volume management and data persistence
+ * Production deployment guidelines
+ * GPU support instructions
+ * Troubleshooting guide
+
 6. Project Documentation
 The project includes comprehensive documentation:
 
