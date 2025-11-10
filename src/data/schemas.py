@@ -283,7 +283,6 @@ class StrategyProposal(BaseModel):
         timestamp: Creation timestamp.
     """
 
-    strategy_type: str
     symbol: str
     strategy_type: str
     direction: TradeDirection
