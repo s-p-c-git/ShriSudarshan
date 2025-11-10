@@ -246,21 +246,44 @@ class StrategyProposal(BaseModel):
     Represents a proposed trading strategy (equity or derivatives).
 
     Args:
-        agent_role: Role of the proposing agent.
+        agent_role: Role of the proposing agent (optional for backwards compatibility).
         strategy_type: Type of strategy (e.g., 'option_spread', 'long_equity').
         symbol: Target security symbol.
-        details: Structured details of the strategy.
-        expected_return: Estimated return (percentage).
-        risk_level: Qualitative risk level.
+        direction: Trade direction (long/short/neutral).
         rationale: Rationale for the proposal.
+        expected_return: Estimated return (percentage).
+        max_loss: Maximum acceptable loss (percentage).
+        entry_conditions: Conditions that should be met to enter the trade.
+        exit_conditions: Conditions for exiting the trade.
+        position_size_pct: Position size as percentage of portfolio.
+        time_horizon_days: Expected holding period in days.
+        confidence_score: Confidence in the strategy (0.0 - 1.0).
+        debate_summary: Summary of debate leading to this strategy.
+        details: Structured details of the strategy (for backwards compatibility).
+        risk_level: Qualitative risk level (for backwards compatibility).
     """
-    agent_role: AgentRole
-    strategy_type: str
+    model_config = ConfigDict(use_enum_values=True)
+    
     symbol: str
+    strategy_type: str
+    direction: TradeDirection
+    rationale: str
+    expected_return: float
+    max_loss: float
+    entry_conditions: list[str] = Field(default_factory=list, alias="entry_criteria")
+    exit_conditions: list[str] = Field(default_factory=list, alias="exit_criteria")
+    position_size_pct: float
+    time_horizon_days: int
+    confidence_score: float = Field(default=0.5, ge=0.0, le=1.0, alias="confidence")
+    debate_summary: str = ""
+    
+    # Optional fields for backwards compatibility
+    agent_role: Optional[AgentRole] = None
     details: dict[str, Any] = Field(default_factory=dict)
-    expected_return: Optional[float] = None
     risk_level: Optional[str] = None
-    rationale: Optional[str] = None
+    holding_period: Optional[str] = None
+    risk_factors: list[str] = Field(default_factory=list)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class Order(BaseModel):
