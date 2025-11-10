@@ -255,8 +255,9 @@ class MockBullishResearcher(MockBaseAgent):
     ) -> DebateArgument:
         """Return mock bullish argument."""
         return DebateArgument(
-            agent_role=AgentRole.BULLISH_RESEARCHER,
-            stance=Sentiment.BULLISH,
+            role=AgentRole.BULLISH_RESEARCHER,
+            position=Sentiment.BULLISH,
+            round_number=round_number,
             rationale="Strong fundamentals support upward price movement",
             supporting_evidence=["High profit margins", "Growing revenue", "Positive sentiment"],
             confidence=0.8,
@@ -290,8 +291,9 @@ class MockBearishResearcher(MockBaseAgent):
     ) -> DebateArgument:
         """Return mock bearish argument."""
         return DebateArgument(
-            agent_role=AgentRole.BEARISH_RESEARCHER,
-            stance=Sentiment.BEARISH,
+            role=AgentRole.BEARISH_RESEARCHER,
+            position=Sentiment.BEARISH,
+            round_number=round_number,
             rationale="Valuation metrics suggest overvaluation concerns",
             supporting_evidence=["High P/E ratio", "Market saturation", "Regulatory risks"],
             confidence=0.7,
