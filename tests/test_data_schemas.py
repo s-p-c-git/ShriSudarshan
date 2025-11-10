@@ -209,7 +209,7 @@ class TestDebateArgument:
             role=AgentRole.BULLISH_RESEARCHER,
             position=Sentiment.BULLISH,
             round_number=1,
-            argument="Test",
+            rationale="Test",
         )
 
         assert isinstance(arg.timestamp, datetime)
