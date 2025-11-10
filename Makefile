@@ -52,7 +52,7 @@ setup:
 # Build targets
 build:
 	@echo "Building Docker image (CPU)..."
-	docker build -t shri-sudarshan:latest .
+	cd docker && docker build -t shri-sudarshan:latest -f Dockerfile ..
 	@echo "✓ Build complete"
 
 build-gpu:
@@ -68,7 +68,7 @@ LOG_LEVEL ?= INFO
 
 run:
 	@echo "Running analysis for $(SYMBOL)..."
-	docker compose run --rm shri-sudarshan \
+	cd docker && docker compose run --rm shri-sudarshan \
 		--symbol $(SYMBOL) \
 		--log-level $(LOG_LEVEL) \
 		$(if $(START_DATE),--start_date $(START_DATE)) \
@@ -88,36 +88,36 @@ run-gpu:
 # Docker Compose targets
 up:
 	@echo "Starting services..."
-	docker compose up -d
+	cd docker && docker compose up -d
 	@echo "✓ Services started"
 
 down:
 	@echo "Stopping services..."
-	docker compose down
+	cd docker && docker compose down
 	@echo "✓ Services stopped"
 
 restart: down up
 
 logs:
-	docker compose logs -f shri-sudarshan
+	cd docker && docker compose logs -f shri-sudarshan
 
 # Development targets
 shell:
 	@echo "Opening interactive shell..."
-	docker compose run --rm --entrypoint /bin/bash shri-sudarshan
+	cd docker && docker compose run --rm --entrypoint /bin/bash shri-sudarshan
 
 test:
 	@echo "Running tests..."
-	docker compose run --rm --entrypoint pytest shri-sudarshan
+	cd docker && docker compose run --rm --entrypoint pytest shri-sudarshan
 
 validate:
 	@echo "Validating Docker configuration..."
-	@./test_docker_setup.sh
+	@./docker/test_docker_setup.sh
 
 # Cleanup targets
 clean:
 	@echo "Cleaning up containers and volumes..."
-	docker compose down -v
+	cd docker && docker compose down -v
 	@echo "✓ Cleanup complete"
 
 clean-all: clean
@@ -144,10 +144,10 @@ push: tag
 # Multi-service targets
 up-full:
 	@echo "Starting all services (with PostgreSQL and Redis)..."
-	docker compose --profile full up -d
+	cd docker && docker compose --profile full up -d
 	@echo "✓ All services started"
 
 up-production:
 	@echo "Starting production services..."
-	docker compose --profile production up -d
+	cd docker && docker compose --profile production up -d
 	@echo "✓ Production services started"
