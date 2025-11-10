@@ -265,12 +265,12 @@ class TestOrder:
             side=OrderSide.BUY,
             quantity=100,
             order_type=OrderType.LIMIT,
-            limit_price=150.00,
+            price=150.00,
         )
 
         assert order.symbol == "AAPL"
         assert order.quantity == 100
-        assert order.limit_price == 150.00
+        assert order.price == 150.00
 
     def test_options_order(self):
         """Test creating an options order.
@@ -283,12 +283,12 @@ class TestOrder:
             side=OrderSide.SELL,
             quantity=1,
             order_type=OrderType.LIMIT,
-            limit_price=3.50,
+            price=3.50,
         )
 
         assert order.symbol == "AAPL_CALL_155"
         assert order.quantity == 1
-        assert order.limit_price == 3.50
+        assert order.price == 3.50
 
     def test_quantity_validation(self):
         """Test quantity must be positive."""
@@ -325,14 +325,14 @@ class TestExecutionPlan:
                 side=OrderSide.BUY,
                 quantity=100,
                 order_type=OrderType.LIMIT,
-                limit_price=150.00,
+                price=150.00,
             ),
             Order(
                 symbol="AAPL_CALL_155",
                 side=OrderSide.SELL,
                 quantity=1,
                 order_type=OrderType.LIMIT,
-                limit_price=3.50,
+                price=3.50,
             ),
         ]
 
