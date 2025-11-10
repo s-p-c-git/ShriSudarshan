@@ -294,7 +294,7 @@ class MockBearishResearcher(MockBaseAgent):
             role=AgentRole.BEARISH_RESEARCHER,
             position=Sentiment.BEARISH,
             round_number=round_number,
-            argument="Valuation metrics suggest overvaluation concerns",
+            rationale="Valuation metrics suggest overvaluation concerns",
             supporting_evidence=["High P/E ratio", "Market saturation", "Regulatory risks"],
             confidence=0.7,
         )
