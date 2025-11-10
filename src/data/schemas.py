@@ -10,6 +10,11 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, root_validator
 
+from ..utils.logger import get_logger
+
+
+logger = get_logger(__name__)
+
 
 # =============================================================================
 # Enums
@@ -133,7 +138,12 @@ class AgentReport(BaseModel):
                     values["confidence"] = float(raw) / 10.0
                 else:
                     values["confidence"] = float(raw)
-            except Exception:
+            except (ValueError, TypeError) as e:
+                logger.warning(
+                    "Failed to convert confidence_level to confidence",
+                    error=str(e),
+                    raw_value=values.get("confidence_level"),
+                )
                 values["confidence"] = 0.5
 
         return values
@@ -223,6 +233,7 @@ class FinGPTGenerativeReport(AgentReport):
 # Core Debate, Strategy, Execution, and Oversight Models
 # =============================================================================
 
+
 class DebateArgument(BaseModel):
     """
     Represents a structured argument in the debate phase.
@@ -234,6 +245,7 @@ class DebateArgument(BaseModel):
         confidence: Confidence score (0.0 - 1.0).
         supporting_evidence: List of supporting facts or data.
     """
+
     agent_role: AgentRole
     stance: Sentiment
     rationale: str
@@ -254,6 +266,7 @@ class StrategyProposal(BaseModel):
         risk_level: Qualitative risk level.
         rationale: Rationale for the proposal.
     """
+
     agent_role: AgentRole
     strategy_type: str
     symbol: str
@@ -275,6 +288,7 @@ class Order(BaseModel):
         order_style: 'market', 'limit', etc.
         timestamp: Time of order creation.
     """
+
     symbol: str
     order_type: str
     quantity: float
@@ -293,6 +307,7 @@ class ExecutionPlan(BaseModel):
         execution_strategy: Description of execution approach.
         notes: Additional notes.
     """
+
     agent_role: AgentRole
     orders: list[Order] = Field(default_factory=list)
     execution_strategy: Optional[str] = None
@@ -311,6 +326,7 @@ class RiskAssessment(BaseModel):
         approved: Whether the risk is acceptable.
         comments: Additional comments.
     """
+
     agent_role: AgentRole
     risk_score: float = Field(ge=0.0, le=1.0)
     risk_factors: list[str] = Field(default_factory=list)
@@ -329,6 +345,7 @@ class PortfolioDecision(BaseModel):
         rationale: Rationale for the decision.
         modifications: Any modifications to the proposal.
     """
+
     agent_role: AgentRole
     approved: bool
     rationale: Optional[str] = None
@@ -347,6 +364,7 @@ class TradeOutcome(BaseModel):
         pnl: Profit or loss.
         timestamp: Time of trade completion.
     """
+
     symbol: str
     entry_price: float
     exit_price: float
@@ -365,8 +383,11 @@ class Reflection(BaseModel):
         lessons_learned: Key lessons.
         improvement_suggestions: Suggestions for future improvement.
     """
+
     agent_role: AgentRole
     trade_outcome: TradeOutcome
     lessons_learned: list[str] = Field(default_factory=list)
     improvement_suggestions: list[str] = Field(default_factory=list)
+
+
 # (rest of file unchanged)
