@@ -239,10 +239,9 @@ class DebateArgument(BaseModel):
     Represents a structured argument in the debate phase.
 
     Args:
-        round_number: The debate round number.
-        role: Role of the agent making the argument.
-        position: Bullish or bearish position.
-        argument: Textual argument content.
+        agent_role: Role of the agent making the argument.
+        stance: Bullish or bearish position.
+        rationale: Textual argument content.
         supporting_evidence: List of supporting facts or data.
         counterpoints: List of counterpoints to opposing arguments.
         confidence: Confidence score (0.0 - 1.0), optional.
@@ -289,7 +288,7 @@ class StrategyProposal(BaseModel):
     rationale: str
     expected_return: float
     max_loss: float
-    
+
     # Fields with defaults (support both old and new names via aliases)
     entry_conditions: list[str] = Field(default_factory=list, alias="entry_criteria")
     exit_conditions: list[str] = Field(default_factory=list, alias="exit_criteria")
@@ -297,7 +296,7 @@ class StrategyProposal(BaseModel):
     time_horizon_days: int = 30  # Default 30 days
     confidence_score: float = Field(default=0.5, ge=0.0, le=1.0, alias="confidence")
     debate_summary: str = ""
-    
+
     # Optional fields for backwards compatibility
     agent_role: Optional[AgentRole] = None
     details: dict[str, Any] = Field(default_factory=dict)
@@ -323,13 +322,25 @@ class Order(BaseModel):
     """
 
     symbol: str
-    side: OrderSide
-    order_type: OrderType
-    quantity: int = Field(gt=0)
+    side: str
+    order_type: str
+    quantity: float
     limit_price: Optional[float] = None
     stop_price: Optional[float] = None
     time_in_force: str = "DAY"
+    order_style: str = "market"
     timestamp: datetime = Field(default_factory=datetime.now)
+
+    @model_validator(mode="before")
+    @classmethod
+    def handle_legacy_price_field(cls, values: dict[str, Any]) -> dict[str, Any]:
+        """Handle legacy 'price' field by converting to 'limit_price'."""
+        if isinstance(values, dict):
+            # If 'price' is provided but not 'limit_price', use 'price' as 'limit_price'
+            if "price" in values and "limit_price" not in values:
+                values["limit_price"] = values.pop("price")
+                logger.debug("Converted legacy 'price' field to 'limit_price'")
+        return values
 
 
 class ExecutionPlan(BaseModel):
