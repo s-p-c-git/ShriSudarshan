@@ -258,7 +258,7 @@ class MockBullishResearcher(MockBaseAgent):
             role=AgentRole.BULLISH_RESEARCHER,
             position=Sentiment.BULLISH,
             round_number=round_number,
-            argument="Strong fundamentals support upward price movement",
+            rationale="Strong fundamentals support upward price movement",
             supporting_evidence=["High profit margins", "Growing revenue", "Positive sentiment"],
             confidence=0.8,
         )
@@ -294,7 +294,7 @@ class MockBearishResearcher(MockBaseAgent):
             role=AgentRole.BEARISH_RESEARCHER,
             position=Sentiment.BEARISH,
             round_number=round_number,
-            argument="Valuation metrics suggest overvaluation concerns",
+            rationale="Valuation metrics suggest overvaluation concerns",
             supporting_evidence=["High P/E ratio", "Market saturation", "Regulatory risks"],
             confidence=0.7,
         )
