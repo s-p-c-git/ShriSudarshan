@@ -239,10 +239,9 @@ class DebateArgument(BaseModel):
     Represents a structured argument in the debate phase.
 
     Args:
-        round_number: The debate round number.
-        role: Role of the agent making the argument.
-        position: Bullish or bearish position.
-        argument: Textual argument content.
+        agent_role: Role of the agent making the argument.
+        stance: Bullish or bearish stance.
+        rationale: Textual rationale for the argument.
         supporting_evidence: List of supporting facts or data.
         counterpoints: List of counterpoints to opposing arguments.
         confidence: Confidence score (0.0 - 1.0), optional.
@@ -289,7 +288,7 @@ class StrategyProposal(BaseModel):
     rationale: str
     expected_return: float
     max_loss: float
-    
+
     # Fields with defaults (support both old and new names via aliases)
     entry_conditions: list[str] = Field(default_factory=list, alias="entry_criteria")
     exit_conditions: list[str] = Field(default_factory=list, alias="exit_criteria")
@@ -297,7 +296,7 @@ class StrategyProposal(BaseModel):
     time_horizon_days: int = 30  # Default 30 days
     confidence_score: float = Field(default=0.5, ge=0.0, le=1.0, alias="confidence")
     debate_summary: str = ""
-    
+
     # Optional fields for backwards compatibility
     agent_role: Optional[AgentRole] = None
     details: dict[str, Any] = Field(default_factory=dict)
