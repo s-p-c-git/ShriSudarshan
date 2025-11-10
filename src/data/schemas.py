@@ -352,7 +352,7 @@ class TradeOutcome(BaseModel):
     exit_price: float
     quantity: float
     pnl: float
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class Reflection(BaseModel):
