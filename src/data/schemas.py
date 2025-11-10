@@ -246,9 +246,8 @@ class StrategyProposal(BaseModel):
     Represents a proposed trading strategy (equity or derivatives).
 
     Args:
-        agent_role: Role of the proposing agent (optional for backwards compatibility).
-        strategy_type: Type of strategy (e.g., 'option_spread', 'long_equity').
         symbol: Target security symbol.
+        strategy_type: Type of strategy (e.g., 'option_spread', 'long_equity').
         direction: Trade direction (long/short/neutral).
         rationale: Rationale for the proposal.
         expected_return: Estimated return (percentage).
@@ -259,21 +258,28 @@ class StrategyProposal(BaseModel):
         time_horizon_days: Expected holding period in days.
         confidence_score: Confidence in the strategy (0.0 - 1.0).
         debate_summary: Summary of debate leading to this strategy.
+        agent_role: Role of the proposing agent (optional for backwards compatibility).
         details: Structured details of the strategy (for backwards compatibility).
         risk_level: Qualitative risk level (for backwards compatibility).
+        holding_period: Legacy field (superseded by time_horizon_days).
+        risk_factors: List of identified risk factors.
+        timestamp: Creation timestamp.
     """
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(use_enum_values=True, populate_by_name=True)
     
+    # Required fields
     symbol: str
     strategy_type: str
     direction: TradeDirection
     rationale: str
     expected_return: float
     max_loss: float
+    
+    # Fields with defaults (support both old and new names via aliases)
     entry_conditions: list[str] = Field(default_factory=list, alias="entry_criteria")
     exit_conditions: list[str] = Field(default_factory=list, alias="exit_criteria")
-    position_size_pct: float
-    time_horizon_days: int
+    position_size_pct: float = 0.02  # Default 2% position size
+    time_horizon_days: int = 30  # Default 30 days
     confidence_score: float = Field(default=0.5, ge=0.0, le=1.0, alias="confidence")
     debate_summary: str = ""
     
