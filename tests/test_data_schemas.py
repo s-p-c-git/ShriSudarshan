@@ -191,15 +191,13 @@ class TestDebateArgument:
     def test_valid_argument(self):
         """Test creating a valid debate argument."""
         arg = DebateArgument(
-            role=AgentRole.BULLISH_RESEARCHER,
-            position=Sentiment.BULLISH,
-            round_number=1,
-            argument="Strong buy signal",
+            agent_role=AgentRole.BULLISH_RESEARCHER,
+            stance=Sentiment.BULLISH,
+            rationale="Strong buy signal",
             supporting_evidence=["High momentum", "Positive fundamentals"],
             confidence=0.85,
         )
 
-        assert arg.round_number == 1
         assert len(arg.supporting_evidence) == 2
         assert arg.confidence == 0.85
 

@@ -244,7 +244,7 @@ class DebateArgument(BaseModel):
         rationale: Textual argument content.
         supporting_evidence: List of supporting facts or data.
         counterpoints: List of counterpoints to opposing arguments.
-        confidence: Confidence score (0.0 - 1.0), optional.
+        confidence: Confidence score (0.0 - 1.0), defaults to 0.0.
         timestamp: Timestamp when argument was created (auto-generated).
     """
 
