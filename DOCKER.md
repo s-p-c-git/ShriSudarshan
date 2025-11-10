@@ -32,6 +32,28 @@ This guide provides comprehensive instructions for running Project Shri Sudarsha
 
 ## Quick Start
 
+### Option 1: Using Makefile (Recommended)
+
+The easiest way to get started:
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/s-p-c-git/ShriSudarshan.git
+cd ShriSudarshan
+make setup
+
+# 2. Edit .env and add your API keys
+nano .env
+
+# 3. Build and run
+make build
+make run SYMBOL=AAPL
+```
+
+See `make help` for all available commands.
+
+### Option 2: Using Docker Compose
+
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/s-p-c-git/ShriSudarshan.git
@@ -47,13 +69,19 @@ This guide provides comprehensive instructions for running Project Shri Sudarsha
 
 3. **Build and run with Docker Compose**:
    ```bash
-   docker-compose up -d
+   docker compose build
+   docker compose run --rm shri-sudarshan --symbol AAPL
    ```
 
-4. **Analyze a stock**:
-   ```bash
-   docker-compose run --rm shri-sudarshan --symbol AAPL
-   ```
+### Option 3: Using Docker directly
+
+```bash
+# Build the image
+docker build -t shri-sudarshan:latest .
+
+# Run analysis
+docker run --rm --env-file .env -v $(pwd)/data:/app/data shri-sudarshan:latest --symbol AAPL
+```
 
 ## Building the Image
 
@@ -498,6 +526,30 @@ docker-compose build --no-cache
 - Verify all dependencies are in `requirements.txt`
 - Rebuild the image: `docker-compose build --no-cache`
 - Check that `PYTHONPATH` is set correctly in Dockerfile
+
+#### 7. SSL Certificate Verification Failed During Build
+
+**Error**: `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain`
+
+**Solution**:
+This can occur in some CI/CD environments or corporate networks with SSL inspection. Try one of these approaches:
+
+- **Option 1 - Use trusted certificates** (recommended for production):
+  ```bash
+  # Install certificates in the container
+  RUN apt-get update && apt-get install -y ca-certificates
+  RUN update-ca-certificates
+  ```
+
+- **Option 2 - Temporarily disable SSL verification** (development only):
+  ```dockerfile
+  # In Dockerfile, temporarily add:
+  ENV PIP_TRUSTED_HOST=pypi.org pypi.python.org files.pythonhosted.org
+  ```
+
+- **Option 3 - Use a different network** or wait and retry if this is a transient issue
+
+**Note**: The Dockerfile works correctly in normal environments. This is typically an environment-specific issue.
 
 ### Debugging Tips
 
