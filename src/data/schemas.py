@@ -10,6 +10,11 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from ..utils.logger import get_logger
+
+
+logger = get_logger(__name__)
+
 
 # =============================================================================
 # Enums
@@ -133,7 +138,12 @@ class AgentReport(BaseModel):
                     values["confidence"] = float(raw) / 10.0
                 else:
                     values["confidence"] = float(raw)
-            except Exception:
+            except (ValueError, TypeError) as e:
+                logger.warning(
+                    "Failed to convert confidence_level to confidence",
+                    error=str(e),
+                    raw_value=values.get("confidence_level"),
+                )
                 values["confidence"] = 0.5
 
         return values
