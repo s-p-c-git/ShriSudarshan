@@ -323,11 +323,25 @@ class Order(BaseModel):
     """
 
     symbol: str
+    side: str
     order_type: str
     quantity: float
-    price: Optional[float] = None
+    limit_price: Optional[float] = None
+    stop_price: Optional[float] = None
+    time_in_force: str = "DAY"
     order_style: str = "market"
     timestamp: datetime = Field(default_factory=datetime.now)
+
+    @model_validator(mode="before")
+    @classmethod
+    def handle_legacy_price_field(cls, values: dict[str, Any]) -> dict[str, Any]:
+        """Handle legacy 'price' field by converting to 'limit_price'."""
+        if isinstance(values, dict):
+            # If 'price' is provided but not 'limit_price', use 'price' as 'limit_price'
+            if "price" in values and "limit_price" not in values:
+                values["limit_price"] = values.pop("price")
+                logger.debug("Converted legacy 'price' field to 'limit_price'")
+        return values
 
 
 class ExecutionPlan(BaseModel):
