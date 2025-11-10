@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # =============================================================================
@@ -111,8 +111,8 @@ class AgentReport(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
+    @model_validator(mode="before")
     @classmethod
-    @root_validator(pre=True)
     def accept_legacy_fields(cls, values):
         """
         Compatibility shim to accept legacy field names:
@@ -223,6 +223,7 @@ class FinGPTGenerativeReport(AgentReport):
 # Core Debate, Strategy, Execution, and Oversight Models
 # =============================================================================
 
+
 class DebateArgument(BaseModel):
     """
     Represents a structured argument in the debate phase.
@@ -234,6 +235,7 @@ class DebateArgument(BaseModel):
         confidence: Confidence score (0.0 - 1.0).
         supporting_evidence: List of supporting facts or data.
     """
+
     agent_role: AgentRole
     stance: Sentiment
     rationale: str
@@ -265,9 +267,9 @@ class StrategyProposal(BaseModel):
         risk_factors: List of identified risk factors.
         timestamp: Creation timestamp.
     """
-    model_config = ConfigDict(use_enum_values=True, populate_by_name=True)
-    
-    # Required fields
+
+    agent_role: AgentRole
+    strategy_type: str
     symbol: str
     strategy_type: str
     direction: TradeDirection
@@ -298,18 +300,21 @@ class Order(BaseModel):
 
     Args:
         symbol: Security symbol.
-        order_type: 'buy' or 'sell'.
-        quantity: Number of shares/contracts.
-        price: Limit or market price.
-        order_style: 'market', 'limit', etc.
+        side: Order side (BUY or SELL).
+        order_type: Order type (MARKET, LIMIT, STOP, STOP_LIMIT).
+        quantity: Number of shares/contracts (must be positive).
+        limit_price: Limit price for LIMIT and STOP_LIMIT orders.
+        stop_price: Stop price for STOP and STOP_LIMIT orders.
+        time_in_force: Time in force (DAY, GTC, IOC, FOK).
         timestamp: Time of order creation.
     """
+
     symbol: str
     order_type: str
     quantity: float
     price: Optional[float] = None
     order_style: str = "market"
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class ExecutionPlan(BaseModel):
@@ -322,6 +327,7 @@ class ExecutionPlan(BaseModel):
         execution_strategy: Description of execution approach.
         notes: Additional notes.
     """
+
     agent_role: AgentRole
     orders: list[Order] = Field(default_factory=list)
     execution_strategy: Optional[str] = None
@@ -340,6 +346,7 @@ class RiskAssessment(BaseModel):
         approved: Whether the risk is acceptable.
         comments: Additional comments.
     """
+
     agent_role: AgentRole
     risk_score: float = Field(ge=0.0, le=1.0)
     risk_factors: list[str] = Field(default_factory=list)
@@ -358,6 +365,7 @@ class PortfolioDecision(BaseModel):
         rationale: Rationale for the decision.
         modifications: Any modifications to the proposal.
     """
+
     agent_role: AgentRole
     approved: bool
     rationale: Optional[str] = None
@@ -376,12 +384,13 @@ class TradeOutcome(BaseModel):
         pnl: Profit or loss.
         timestamp: Time of trade completion.
     """
+
     symbol: str
     entry_price: float
     exit_price: float
     quantity: float
     pnl: float
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 
 class Reflection(BaseModel):
@@ -394,8 +403,8 @@ class Reflection(BaseModel):
         lessons_learned: Key lessons.
         improvement_suggestions: Suggestions for future improvement.
     """
+
     agent_role: AgentRole
     trade_outcome: TradeOutcome
     lessons_learned: list[str] = Field(default_factory=list)
     improvement_suggestions: list[str] = Field(default_factory=list)
-# (rest of file unchanged)
