@@ -239,13 +239,12 @@ class DebateArgument(BaseModel):
     Represents a structured argument in the debate phase.
 
     Args:
-        round_number: The debate round number.
-        role: Role of the agent making the argument.
-        position: Bullish or bearish position.
-        argument: Textual argument content.
+        agent_role: Role of the agent making the argument.
+        stance: Bullish or bearish sentiment/stance.
+        rationale: Textual argument content and reasoning.
         supporting_evidence: List of supporting facts or data.
         counterpoints: List of counterpoints to opposing arguments.
-        confidence: Confidence score (0.0 - 1.0), optional.
+        confidence: Confidence score (0.0 - 1.0), defaults to 0.0.
         timestamp: Timestamp when argument was created (auto-generated).
     """
 
