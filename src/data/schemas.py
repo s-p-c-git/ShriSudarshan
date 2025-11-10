@@ -327,6 +327,8 @@ class Order(BaseModel):
     order_type: str
     quantity: float
     limit_price: Optional[float] = None
+    stop_price: Optional[float] = None
+    time_in_force: str = "DAY"
     order_style: str = "market"
     timestamp: datetime = Field(default_factory=datetime.now)
 
