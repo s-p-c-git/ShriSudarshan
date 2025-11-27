@@ -5,6 +5,8 @@ This module tests the new DeepSeek R1, Janus-Pro, and FinRL agents.
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from src.agents.execution.rl_executor import FinRLExecutionAgent
@@ -253,9 +255,6 @@ class TestJanusVisualAnalyst:
     @pytest.mark.asyncio
     async def test_generate_chart_image_with_valid_data(self, agent):
         """Test chart generation with valid DataFrame."""
-        import numpy as np
-        import pandas as pd
-
         # Create valid OHLCV DataFrame
         dates = pd.date_range(start="2024-01-01", periods=100, freq="D")
         df = pd.DataFrame({
@@ -278,8 +277,6 @@ class TestJanusVisualAnalyst:
     @pytest.mark.asyncio
     async def test_generate_chart_image_with_empty_data(self, agent):
         """Test chart generation returns None with empty DataFrame."""
-        import pandas as pd
-
         empty_df = pd.DataFrame()
         context = {"chart_data": empty_df}
 
@@ -289,9 +286,6 @@ class TestJanusVisualAnalyst:
     @pytest.mark.asyncio
     async def test_generate_chart_image_without_mplfinance(self, agent):
         """Test chart generation handles missing mplfinance gracefully."""
-        import numpy as np
-        import pandas as pd
-
         dates = pd.date_range(start="2024-01-01", periods=10, freq="D")
         df = pd.DataFrame({
             "Open": np.random.uniform(100, 110, 10),
