@@ -71,9 +71,9 @@ class DeepSeekReasoningAgent(CriticalAgent):
             api_key = settings.deepseek_api_key or settings.openai_api_key
             self._reasoning_llm = ChatOpenAI(
                 model=settings.deepseek_reasoner_model,
-                temperature=0.3,
+                temperature=self.temperature,
                 openai_api_key=api_key,
-                openai_api_base=settings.deepseek_base_url,
+                base_url=settings.deepseek_base_url,
             )
         return self._reasoning_llm
 

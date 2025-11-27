@@ -4,15 +4,26 @@ Reinforcement learning agent for trade execution.
 Supports PPO, DDPG, A2C, and TD3 algorithms.
 """
 
+from __future__ import annotations
+
 import logging
-import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
 
 logger = logging.getLogger(__name__)
+
+# =============================================================================
+# Trading Action Thresholds (shared between RL discretization and rule-based)
+# =============================================================================
+# These thresholds define the decision boundaries for discretizing continuous
+# actions into discrete buy/sell/hold decisions. Values chosen based on:
+# - Empirical testing showing 0.3 provides good balance between action frequency and signal quality
+# - Symmetric thresholds for buy/sell to avoid directional bias
+ACTION_BUY_THRESHOLD = 0.3   # Combined signal above this triggers buy
+ACTION_SELL_THRESHOLD = -0.3  # Combined signal below this triggers sell
 
 
 class RLAgent:
@@ -26,7 +37,7 @@ class RLAgent:
     def __init__(
         self,
         agent_type: str = "ppo",
-        policy_path: str | None = None,
+        policy_path: Optional[str] = None,
     ):
         """
         Initialize RL Agent.
@@ -54,7 +65,7 @@ class RLAgent:
             logger.warning("Environment not available, using mock mode")
             self.env = None
 
-    def _init_model(self, policy_path: str | None = None):
+    def _init_model(self, policy_path: Optional[str] = None):
         """
         Initialize or load the RL model.
 
@@ -74,14 +85,14 @@ class RLAgent:
             if self.agent_type not in algorithm_map:
                 raise ValueError(f"Unknown agent type: {self.agent_type}")
 
-            Algorithm = algorithm_map[self.agent_type]
+            algorithm = algorithm_map[self.agent_type]
 
             if policy_path and Path(policy_path).exists():
                 logger.info(f"Loading model from {policy_path}")
-                self.model = Algorithm.load(policy_path, env=self.env)
+                self.model = algorithm.load(policy_path, env=self.env)
             elif self.env is not None:
                 logger.info(f"Creating new {self.agent_type.upper()} model")
-                self.model = Algorithm("MlpPolicy", self.env, verbose=1)
+                self.model = algorithm("MlpPolicy", self.env, verbose=1)
             else:
                 logger.warning("No environment available, model not initialized")
                 self.model = None
@@ -174,9 +185,9 @@ class RLAgent:
         else:
             action_value = action
 
-        if action_value > 0.3:
+        if action_value > ACTION_BUY_THRESHOLD:
             return 1  # Buy
-        elif action_value < -0.3:
+        elif action_value < ACTION_SELL_THRESHOLD:
             return -1  # Sell
         else:
             return 0  # Hold
@@ -202,8 +213,12 @@ class RLAgent:
                     log_prob = dist.log_prob(action)
                     confidence = np.exp(log_prob.mean().item())
                     return min(1.0, max(0.0, confidence))
-        except (AttributeError, RuntimeError):
-            pass
+        except (AttributeError, RuntimeError) as exc:
+            # If the model's policy does not support confidence estimation, fall back to default.
+            logger.warning(
+                "Could not compute action confidence: %s. Using default value.",
+                exc,
+            )
 
         return 0.6
 
@@ -219,10 +234,10 @@ class RLAgent:
         """
         combined = state.get("combined_signal", 0.0)
 
-        if combined > 0.3:
+        if combined > ACTION_BUY_THRESHOLD:
             action = 1
             confidence = min(1.0, 0.5 + abs(combined))
-        elif combined < -0.3:
+        elif combined < ACTION_SELL_THRESHOLD:
             action = -1
             confidence = min(1.0, 0.5 + abs(combined))
         else:

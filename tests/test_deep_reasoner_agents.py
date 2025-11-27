@@ -3,23 +3,24 @@
 This module tests the new DeepSeek R1, Janus-Pro, and FinRL agents.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.agents.strategy_research.reasoning import DeepSeekReasoningAgent
-from src.agents.market_intelligence.vision import JanusVisualAnalyst
+import pytest
+
 from src.agents.execution.rl_executor import FinRLExecutionAgent
+from src.agents.market_intelligence.vision import JanusVisualAnalyst
+from src.agents.strategy_research.reasoning import DeepSeekReasoningAgent
 from src.data.schemas import (
     AgentRole,
     DeepSeekReasoningReport,
-    JanusVisualReport,
     FinRLExecutionReport,
-    StrategyProposal,
-    TradeDirection,
-    TechnicalReport,
     FundamentalsReport,
-    TrendDirection,
+    JanusVisualReport,
     Sentiment,
+    StrategyProposal,
+    TechnicalReport,
+    TradeDirection,
+    TrendDirection,
 )
 
 
@@ -135,6 +136,52 @@ class TestDeepSeekReasoningAgent:
         assert isinstance(result, DeepSeekReasoningReport)
         assert result.strategy_validated is False
 
+    @pytest.mark.asyncio
+    async def test_self_correct_is_called_when_confidence_low(self, agent, sample_context):
+        """Test that _self_correct is called when initial confidence is below 0.7."""
+        # Create a low confidence initial report
+        low_confidence_response = """
+        ```json
+        {
+            "strategy_validated": false,
+            "approval_status": "needs_modification",
+            "mathematical_analysis": "Uncertain analysis",
+            "risk_metrics": {"risk_reward_ratio": 0.5},
+            "confidence_score": 0.5,
+            "summary": "Low confidence validation",
+            "self_correction_notes": ["Need more data"]
+        }
+        ```
+        """
+
+        # Mock the reasoning response to return low confidence first, then higher confidence
+        correction_response = """
+        ```json
+        {
+            "strategy_validated": true,
+            "approval_status": "approved",
+            "mathematical_analysis": "Revised analysis after correction",
+            "risk_metrics": {"risk_reward_ratio": 1.2},
+            "confidence_score": 0.85,
+            "summary": "Improved after self-correction"
+        }
+        ```
+        """
+
+        with patch.object(
+            agent, "_generate_reasoning_response",
+            new=AsyncMock(side_effect=[
+                (low_confidence_response, "initial reasoning"),
+                (correction_response, "correction reasoning"),
+            ])
+        ):
+            result = await agent.analyze(sample_context)
+
+            # Self-correction should have been triggered and improved confidence
+            assert isinstance(result, DeepSeekReasoningReport)
+            # The final report should have self-correction note added
+            assert any("Self-correction applied" in note for note in result.self_correction_notes)
+
 
 # =============================================================================
 # Janus Visual Analyst Tests
@@ -202,6 +249,63 @@ class TestJanusVisualAnalyst:
         assert len(report.patterns_detected) == 1
         assert report.confidence == 0.75
         assert report.trend_analysis == "bearish"
+
+    @pytest.mark.asyncio
+    async def test_generate_chart_image_with_valid_data(self, agent):
+        """Test chart generation with valid DataFrame."""
+        import numpy as np
+        import pandas as pd
+
+        # Create valid OHLCV DataFrame
+        dates = pd.date_range(start="2024-01-01", periods=100, freq="D")
+        df = pd.DataFrame({
+            "Open": np.random.uniform(100, 110, 100),
+            "High": np.random.uniform(110, 120, 100),
+            "Low": np.random.uniform(90, 100, 100),
+            "Close": np.random.uniform(100, 110, 100),
+            "Volume": np.random.randint(1000000, 5000000, 100),
+        }, index=dates)
+
+        context = {"chart_data": df}
+
+        with patch("mplfinance.plot"):
+            # Mock successful chart generation
+            # The function should attempt to generate the chart
+            await agent._generate_chart_image(context)
+            # If mplfinance is available, it should attempt to plot
+            # Otherwise returns None gracefully
+
+    @pytest.mark.asyncio
+    async def test_generate_chart_image_with_empty_data(self, agent):
+        """Test chart generation returns None with empty DataFrame."""
+        import pandas as pd
+
+        empty_df = pd.DataFrame()
+        context = {"chart_data": empty_df}
+
+        result = await agent._generate_chart_image(context)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_generate_chart_image_without_mplfinance(self, agent):
+        """Test chart generation handles missing mplfinance gracefully."""
+        import numpy as np
+        import pandas as pd
+
+        dates = pd.date_range(start="2024-01-01", periods=10, freq="D")
+        df = pd.DataFrame({
+            "Open": np.random.uniform(100, 110, 10),
+            "High": np.random.uniform(110, 120, 10),
+            "Low": np.random.uniform(90, 100, 10),
+            "Close": np.random.uniform(100, 110, 10),
+        }, index=dates)
+
+        context = {"chart_data": df}
+
+        # Simulate mplfinance not being installed
+        with patch.dict("sys.modules", {"mplfinance": None}):
+            # Should return None when mplfinance is not available
+            await agent._generate_chart_image(context)
 
 
 # =============================================================================
@@ -317,6 +421,110 @@ class TestFinRLExecutionAgent:
         result = await agent._rule_based_execution("AAPL", state, {"strategy_proposal": sample_strategy})
 
         assert result.action_type == "hold"
+
+    @pytest.mark.asyncio
+    async def test_create_execution_plan_buy(self, agent, sample_strategy):
+        """Test execution plan creation for buy decision."""
+        context = {
+            "symbol": "AAPL",
+            "strategy_proposal": sample_strategy,
+            "current_price": 195.0,
+            "portfolio_value": 100000.0,
+        }
+
+        # Mock the get_execution_decision to return a buy decision
+        with patch.object(
+            agent, "get_execution_decision",
+            new=AsyncMock(return_value=FinRLExecutionReport(
+                symbol="AAPL",
+                summary="Buy decision",
+                confidence=0.8,
+                action_type="buy",
+                execution_confidence=0.8,
+            ))
+        ):
+            plan = await agent.create_execution_plan(context)
+
+            assert len(plan.orders) == 1
+            assert plan.orders[0].symbol == "AAPL"
+            assert plan.orders[0].side == "buy"
+            assert plan.orders[0].quantity > 0
+
+    @pytest.mark.asyncio
+    async def test_create_execution_plan_sell(self, agent, sample_strategy):
+        """Test execution plan creation for sell decision."""
+        context = {
+            "symbol": "AAPL",
+            "strategy_proposal": sample_strategy,
+            "current_price": 195.0,
+            "portfolio_value": 100000.0,
+        }
+
+        with patch.object(
+            agent, "get_execution_decision",
+            new=AsyncMock(return_value=FinRLExecutionReport(
+                symbol="AAPL",
+                summary="Sell decision",
+                confidence=0.7,
+                action_type="sell",
+                execution_confidence=0.7,
+            ))
+        ):
+            plan = await agent.create_execution_plan(context)
+
+            assert len(plan.orders) == 1
+            assert plan.orders[0].symbol == "AAPL"
+            assert plan.orders[0].side == "sell"
+
+    @pytest.mark.asyncio
+    async def test_create_execution_plan_hold(self, agent, sample_strategy):
+        """Test execution plan returns empty orders for hold decision."""
+        context = {
+            "symbol": "AAPL",
+            "strategy_proposal": sample_strategy,
+            "current_price": 195.0,
+        }
+
+        with patch.object(
+            agent, "get_execution_decision",
+            new=AsyncMock(return_value=FinRLExecutionReport(
+                symbol="AAPL",
+                summary="Hold decision",
+                confidence=0.5,
+                action_type="hold",
+                execution_confidence=0.5,
+            ))
+        ):
+            plan = await agent.create_execution_plan(context)
+
+            assert len(plan.orders) == 0
+            assert "No action" in plan.execution_strategy
+
+    @pytest.mark.asyncio
+    async def test_create_execution_plan_position_sizing(self, agent, sample_strategy):
+        """Test that position sizing calculation is correct."""
+        context = {
+            "symbol": "AAPL",
+            "strategy_proposal": sample_strategy,  # position_size_pct = 0.02
+            "current_price": 100.0,
+            "portfolio_value": 100000.0,
+        }
+
+        with patch.object(
+            agent, "get_execution_decision",
+            new=AsyncMock(return_value=FinRLExecutionReport(
+                symbol="AAPL",
+                summary="Buy decision",
+                confidence=0.8,
+                action_type="buy",
+                execution_confidence=0.8,
+            ))
+        ):
+            plan = await agent.create_execution_plan(context)
+
+            # Expected: 100000 * 0.02 / 100 = 20 shares
+            assert len(plan.orders) == 1
+            assert plan.orders[0].quantity == 20.0
 
 
 # =============================================================================

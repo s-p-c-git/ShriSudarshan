@@ -28,6 +28,9 @@ from ..base import BaseAgent
 
 logger = get_logger(__name__)
 
+# Minimum price threshold to avoid division by zero issues
+MIN_PRICE_THRESHOLD = 1e-6
+
 
 class JanusVisualAnalyst(BaseAgent):
     """
@@ -167,13 +170,26 @@ class JanusVisualAnalyst(BaseAgent):
             df = df.copy()
             df.columns = [c.title() for c in df.columns]
 
+            # Validate required OHLCV columns
+            required_cols = {"Open", "High", "Low", "Close"}
+            missing_cols = required_cols - set(df.columns)
+            if missing_cols:
+                logger.warning(
+                    "Chart data missing required columns",
+                    missing=list(missing_cols),
+                    available=list(df.columns),
+                )
+                return None
+
             # Generate candlestick chart
             buf = BytesIO()
+            # Only include volume if Volume column exists
+            has_volume = "Volume" in df.columns
             mpf.plot(
                 df.tail(60),  # Last 60 periods
                 type="candle",
                 style="charles",
-                volume=True,
+                volume=has_volume,
                 mav=(10, 20, 50),
                 savefig={"fname": buf, "format": "png", "dpi": 150},
                 figsize=(12, 8),
@@ -304,13 +320,20 @@ Provide structured JSON output with pattern details and confidence scores.
             current_close = recent["Close"].iloc[-1]
             high_max = recent["High"].max()
             low_min = recent["Low"].min()
-            # Avoid division by zero
-            range_pct = (
-                ((high_max - low_min) / current_close * 100)
-                if current_close > 0
-                else 0.0
-            )
-            price_summary = f"""
+
+            # Explicitly handle zero or near-zero close price
+            if current_close is None or abs(current_close) < MIN_PRICE_THRESHOLD:
+                logger.warning(
+                    "Invalid or zero current_close in price data for LLM fallback",
+                    symbol=symbol,
+                    current_close=current_close,
+                )
+                price_summary = (
+                    "Recent price data is invalid (current price is zero or missing)."
+                )
+            else:
+                range_pct = ((high_max - low_min) / current_close * 100)
+                price_summary = f"""
 Recent price action (last 20 periods):
 - High: ${high_max:.2f}
 - Low: ${low_min:.2f}

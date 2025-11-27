@@ -4,8 +4,10 @@ Custom Gymnasium environment for trade execution.
 State space is augmented with semantic embeddings from R1/Janus.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Any
+from typing import Optional
 
 import gymnasium as gym
 import numpy as np
@@ -73,8 +75,8 @@ class TradingEnvironment(gym.Env):
 
     def reset(
         self,
-        seed: int | None = None,
-        options: dict | None = None,
+        seed: Optional[int] = None,
+        options: Optional[dict] = None,
     ) -> tuple[np.ndarray, dict]:
         """
         Reset environment to initial state.
