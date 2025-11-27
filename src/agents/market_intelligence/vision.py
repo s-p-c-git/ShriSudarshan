@@ -301,12 +301,21 @@ Provide structured JSON output with pattern details and confidence scores.
 
         if price_data is not None and not price_data.empty:
             recent = price_data.tail(20)
+            current_close = recent["Close"].iloc[-1]
+            high_max = recent["High"].max()
+            low_min = recent["Low"].min()
+            # Avoid division by zero
+            range_pct = (
+                ((high_max - low_min) / current_close * 100)
+                if current_close > 0
+                else 0.0
+            )
             price_summary = f"""
 Recent price action (last 20 periods):
-- High: ${recent['High'].max():.2f}
-- Low: ${recent['Low'].min():.2f}
-- Current: ${recent['Close'].iloc[-1]:.2f}
-- Range: {((recent['High'].max() - recent['Low'].min()) / recent['Close'].iloc[-1] * 100):.1f}%
+- High: ${high_max:.2f}
+- Low: ${low_min:.2f}
+- Current: ${current_close:.2f}
+- Range: {range_pct:.1f}%
 """
         else:
             price_summary = "No recent price data available."

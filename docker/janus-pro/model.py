@@ -7,7 +7,6 @@ Uses decoupled visual encoding for chart pattern recognition.
 import json
 import logging
 import os
-import re
 from typing import Any
 
 from PIL import Image
@@ -121,13 +120,40 @@ class JanusProModel:
         Returns:
             Structured analysis dictionary
         """
-        # Try to extract JSON if present
-        json_match = re.search(r"\{[^{}]*\}", response, re.DOTALL)
-        if json_match:
+        # Try to extract JSON if present - handle nested objects
+        # First try to find JSON in code blocks
+        if "```json" in response:
             try:
-                return json.loads(json_match.group())
-            except json.JSONDecodeError:
+                json_str = response.split("```json")[1].split("```")[0].strip()
+                return json.loads(json_str)
+            except (json.JSONDecodeError, IndexError):
                 pass
+        elif "```" in response:
+            try:
+                json_str = response.split("```")[1].split("```")[0].strip()
+                return json.loads(json_str)
+            except (json.JSONDecodeError, IndexError):
+                pass
+
+        # Try to find balanced braces for JSON object
+        try:
+            start_idx = response.find("{")
+            if start_idx != -1:
+                depth = 0
+                end_idx = start_idx
+                for i, char in enumerate(response[start_idx:], start_idx):
+                    if char == "{":
+                        depth += 1
+                    elif char == "}":
+                        depth -= 1
+                        if depth == 0:
+                            end_idx = i
+                            break
+                if depth == 0 and end_idx > start_idx:
+                    json_str = response[start_idx:end_idx + 1]
+                    return json.loads(json_str)
+        except (json.JSONDecodeError, ValueError):
+            pass
 
         # Parse free-form response
         patterns = []

@@ -202,9 +202,14 @@ class FinRLExecutionAgent(BaseAgent):
         strategy_proposal: Optional[StrategyProposal] = context.get("strategy_proposal")
         strategy_direction = 0.0
         if strategy_proposal:
-            if strategy_proposal.direction.value == "long":
+            # Handle direction as either enum or string
+            direction = strategy_proposal.direction
+            direction_str = (
+                direction.value if hasattr(direction, "value") else str(direction)
+            )
+            if direction_str == "long":
                 strategy_direction = 1.0
-            elif strategy_proposal.direction.value == "short":
+            elif direction_str == "short":
                 strategy_direction = -1.0
 
         # Use last known R1/Janus signals (asynchronous updates)
