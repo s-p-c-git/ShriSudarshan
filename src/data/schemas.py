@@ -38,6 +38,10 @@ class AgentRole(str, Enum):
     RISK_MANAGER = "risk_manager"
     PORTFOLIO_MANAGER = "portfolio_manager"
     REFLECTIVE_AGENT = "reflective_agent"
+    # Deep Reasoner v2.0 Agents
+    DEEPSEEK_REASONING_AGENT = "deepseek_reasoning_agent"
+    JANUS_VISUAL_ANALYST = "janus_visual_analyst"
+    FINRL_EXECUTION_AGENT = "finrl_execution_agent"
 
 
 class Sentiment(str, Enum):
@@ -227,6 +231,64 @@ class FinGPTGenerativeReport(AgentReport):
     risks_identified: list[str] = Field(default_factory=list)
     opportunities_identified: list[str] = Field(default_factory=list)
     detailed_summary: str = Field(default="")
+
+
+# =============================================================================
+# Deep Reasoner v2.0 Reports
+# =============================================================================
+
+
+class DeepSeekReasoningReport(AgentReport):
+    """Report from DeepSeek R1 Reasoning Agent (Cognitive Core)."""
+
+    agent_role: AgentRole = Field(default=AgentRole.DEEPSEEK_REASONING_AGENT)
+    reasoning_trace: str = Field(
+        default="",
+        description="Full Chain-of-Thought reasoning trace (logged for auditability)",
+    )
+    strategy_validated: bool = Field(default=False)
+    validation_details: dict[str, Any] = Field(default_factory=dict)
+    mathematical_analysis: str = Field(default="")
+    hedging_recommendation: Optional[str] = None
+    risk_metrics: dict[str, float] = Field(default_factory=dict)
+    self_correction_notes: list[str] = Field(default_factory=list)
+    approval_status: str = Field(default="pending")  # pending, approved, rejected
+
+
+class JanusVisualReport(AgentReport):
+    """Report from Janus-Pro Visual Analyst (Visual Cortex)."""
+
+    agent_role: AgentRole = Field(default=AgentRole.JANUS_VISUAL_ANALYST)
+    patterns_detected: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of detected patterns with confidence scores",
+    )
+    chart_description: str = Field(default="")
+    trend_analysis: str = Field(default="")
+    support_resistance_visual: dict[str, list[float]] = Field(default_factory=dict)
+    pattern_confluence: list[str] = Field(default_factory=list)
+    trading_implications: str = Field(default="")
+    image_analyzed: Optional[str] = Field(
+        default=None, description="Base64 encoded chart image or file path"
+    )
+
+
+class FinRLExecutionReport(AgentReport):
+    """Report from FinRL Execution Agent (Execution Engine)."""
+
+    agent_role: AgentRole = Field(default=AgentRole.FINRL_EXECUTION_AGENT)
+    action_type: str = Field(default="hold")  # buy, sell, hold
+    action_amount: float = Field(default=0.0)
+    execution_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    state_embedding: dict[str, float] = Field(
+        default_factory=dict,
+        description="State space embeddings including R1 and Janus signals",
+    )
+    r1_sentiment_signal: float = Field(default=0.0, ge=-1.0, le=1.0)
+    janus_pattern_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    execution_timing: str = Field(default="immediate")
+    slippage_estimate: float = Field(default=0.0)
+    rl_policy_output: dict[str, Any] = Field(default_factory=dict)
 
 
 # =============================================================================

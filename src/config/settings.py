@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     )
 
     # LLM Provider Configuration
-    llm_provider: Literal["openai", "anthropic"] = Field(
-        default="openai", description="LLM provider to use (openai or anthropic)"
+    llm_provider: Literal["openai", "anthropic", "deepseek"] = Field(
+        default="openai", description="LLM provider to use (openai, anthropic, or deepseek)"
     )
 
     # OpenAI Configuration
@@ -30,6 +30,50 @@ class Settings(BaseSettings):
     )
     standard_model: str = Field(
         default="gpt-4o-mini", description="Standard LLM model for routine tasks"
+    )
+
+    # DeepSeek Configuration (Deep Reasoner v2.0 - Cognitive Core)
+    # SECURITY NOTE: Do NOT install packages named 'deepseek' or 'deepseeek' from PyPI.
+    # Use standard openai python library with base_url="https://api.deepseek.com"
+    deepseek_api_key: Optional[str] = Field(
+        default=None, description="DeepSeek API key for R1 reasoning model"
+    )
+    deepseek_base_url: str = Field(
+        default="https://api.deepseek.com",
+        description="DeepSeek API base URL (use OpenAI SDK)",
+    )
+    deepseek_reasoner_model: str = Field(
+        default="deepseek-reasoner",
+        description="DeepSeek R1 model for Chain-of-Thought reasoning",
+    )
+    deepseek_chat_model: str = Field(
+        default="deepseek-chat",
+        description="DeepSeek chat model for standard tasks",
+    )
+
+    # Janus-Pro Configuration (Deep Reasoner v2.0 - Visual Cortex)
+    janus_pro_enabled: bool = Field(
+        default=False, description="Enable Janus-Pro visual analysis"
+    )
+    janus_pro_endpoint: str = Field(
+        default="http://localhost:8001",
+        description="Janus-Pro service REST API endpoint",
+    )
+    janus_pro_model: str = Field(
+        default="deepseek-ai/Janus-Pro-7B",
+        description="Janus-Pro model for chart pattern recognition",
+    )
+
+    # FinRL Configuration (Deep Reasoner v2.0 - Execution Engine)
+    finrl_enabled: bool = Field(
+        default=False, description="Enable FinRL reinforcement learning execution"
+    )
+    finrl_endpoint: str = Field(
+        default="http://localhost:8002",
+        description="FinRL service REST API endpoint",
+    )
+    finrl_agent_type: str = Field(
+        default="ppo", description="FinRL agent type (ppo, ddpg, a2c, td3)"
     )
 
     # Anthropic Configuration
@@ -115,6 +159,15 @@ class Settings(BaseSettings):
         llm_provider = info.data.get("llm_provider", "openai")
         if llm_provider == "anthropic" and not v:
             raise ValueError("anthropic_api_key must be set when llm_provider is 'anthropic'")
+        return v
+
+    @field_validator("deepseek_api_key")
+    @classmethod
+    def validate_deepseek_key(cls, v: Optional[str], info) -> Optional[str]:
+        """Validate DeepSeek API key is set when using DeepSeek provider."""
+        llm_provider = info.data.get("llm_provider", "openai")
+        if llm_provider == "deepseek" and not v:
+            raise ValueError("deepseek_api_key must be set when llm_provider is 'deepseek'")
         return v
 
 

@@ -1,0 +1,53 @@
+# Dockerfile for FinRL Execution Engine
+# Deep Reasoner v2.0 - Execution Engine
+#
+# This service runs FinRL reinforcement learning agents
+# for low-latency trade execution decisions.
+
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    AGENT_TYPE=ppo \
+    PORT=8002
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
+COPY docker/finrl/requirements.txt ./requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY docker/finrl/app.py ./app.py
+COPY docker/finrl/agent.py ./agent.py
+COPY docker/finrl/environment.py ./environment.py
+
+# Create model directory for saved RL policies
+RUN mkdir -p /app/policies
+
+# Expose port
+EXPOSE 8002
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8002/health || exit 1
+
+# Labels
+LABEL maintainer="Project Shri Sudarshan Team" \
+      description="FinRL Execution Engine for Deep Reasoner v2.0" \
+      version="0.1.0"
+
+# Run the service
+CMD ["python", "app.py"]

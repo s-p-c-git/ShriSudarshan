@@ -1,0 +1,54 @@
+# Dockerfile for Janus-Pro Visual Analysis Service
+# Deep Reasoner v2.0 - Visual Cortex
+#
+# This service runs Janus-Pro-7B for chart pattern recognition
+# and exposes a REST API for the main application.
+#
+# Note: This service has custom PyTorch requirements and runs
+# in isolation to avoid dependency conflicts.
+
+FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    MODEL_NAME=deepseek-ai/Janus-Pro-7B \
+    PORT=8001
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
+COPY docker/janus-pro/requirements.txt ./requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY docker/janus-pro/app.py ./app.py
+COPY docker/janus-pro/model.py ./model.py
+
+# Create model cache directory
+RUN mkdir -p /app/model_cache
+
+# Expose port
+EXPOSE 8001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+# Labels
+LABEL maintainer="Project Shri Sudarshan Team" \
+      description="Janus-Pro Visual Analysis Service for Deep Reasoner v2.0" \
+      version="0.1.0"
+
+# Run the service
+CMD ["python", "app.py"]
