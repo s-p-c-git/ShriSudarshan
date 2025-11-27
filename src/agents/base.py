@@ -35,6 +35,10 @@ def create_llm(
 
     Raises:
         ValueError: If provider is not supported or API key is missing
+
+    Note:
+        For DeepSeek provider, uses OpenAI SDK with custom base_url.
+        SECURITY: Do NOT install 'deepseek' or 'deepseeek' packages from PyPI.
     """
     llm_provider = provider or settings.llm_provider
 
@@ -60,6 +64,21 @@ def create_llm(
             model=model_name,
             temperature=temperature,
             anthropic_api_key=settings.anthropic_api_key,
+        )
+    elif llm_provider == "deepseek":
+        # DeepSeek uses OpenAI SDK with custom base_url
+        # SECURITY: Using OpenAI SDK, NOT malicious PyPI packages
+        if model_name is None:
+            model_name = settings.deepseek_chat_model
+
+        if not settings.deepseek_api_key:
+            raise ValueError("deepseek_api_key must be set when using DeepSeek provider")
+
+        return ChatOpenAI(
+            model=model_name,
+            temperature=temperature,
+            openai_api_key=settings.deepseek_api_key,
+            openai_api_base=settings.deepseek_base_url,
         )
     else:
         raise ValueError(f"Unsupported LLM provider: {llm_provider}")

@@ -20,6 +20,22 @@ services:
       # Anthropic API Configuration
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       
+      # DeepSeek API Configuration (Deep Reasoner v2.0)
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      - DEEPSEEK_REASONER_MODEL=${DEEPSEEK_REASONER_MODEL:-deepseek-reasoner}
+      - DEEPSEEK_CHAT_MODEL=${DEEPSEEK_CHAT_MODEL:-deepseek-chat}
+      
+      # Janus-Pro Configuration (Deep Reasoner v2.0)
+      - JANUS_PRO_ENABLED=${JANUS_PRO_ENABLED:-false}
+      - JANUS_PRO_ENDPOINT=${JANUS_PRO_ENDPOINT:-http://janus-pro:8001}
+      - JANUS_PRO_MODEL=${JANUS_PRO_MODEL:-deepseek-ai/Janus-Pro-7B}
+      
+      # FinRL Configuration (Deep Reasoner v2.0)
+      - FINRL_ENABLED=${FINRL_ENABLED:-false}
+      - FINRL_ENDPOINT=${FINRL_ENDPOINT:-http://finrl:8002}
+      - FINRL_AGENT_TYPE=${FINRL_AGENT_TYPE:-ppo}
+      
       # Data Provider API Keys
       - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
       - TRADIER_API_KEY=${TRADIER_API_KEY}
@@ -100,6 +116,77 @@ services:
     # For interactive usage
     stdin_open: true
     tty: true
+    
+    # Dependencies
+    depends_on:
+      janus-pro:
+        condition: service_healthy
+      finrl:
+        condition: service_healthy
+    profiles:
+      - default
+      - deep-reasoner
+
+  # Janus-Pro Visual Analysis Service (Deep Reasoner v2.0 - Visual Cortex)
+  janus-pro:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.janus-pro
+    image: shri-sudarshan-janus-pro:latest
+    container_name: shri-sudarshan-janus-pro
+    environment:
+      - MODEL_NAME=${JANUS_PRO_MODEL:-deepseek-ai/Janus-Pro-7B}
+      - PORT=8001
+    volumes:
+      - janus-model-cache:/app/model_cache
+    ports:
+      - "8001:8001"
+    networks:
+      - shri-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 16G
+        reservations:
+          cpus: '2.0'
+          memory: 8G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - deep-reasoner
+      - gpu
+
+  # FinRL Execution Engine (Deep Reasoner v2.0 - Execution Engine)
+  finrl:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.finrl
+    image: shri-sudarshan-finrl:latest
+    container_name: shri-sudarshan-finrl
+    environment:
+      - AGENT_TYPE=${FINRL_AGENT_TYPE:-ppo}
+      - PORT=8002
+    volumes:
+      - finrl-policies:/app/policies
+    ports:
+      - "8002:8002"
+    networks:
+      - shri-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    profiles:
+      - deep-reasoner
 
   # Optional: PostgreSQL database (for production episodic memory)
   postgres:
@@ -141,6 +228,10 @@ volumes:
   postgres-data:
     driver: local
   redis-data:
+    driver: local
+  janus-model-cache:
+    driver: local
+  finrl-policies:
     driver: local
 
 # Network configuration
