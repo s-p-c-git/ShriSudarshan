@@ -254,7 +254,7 @@ class TestJanusVisualAnalyst:
 
     @pytest.mark.asyncio
     async def test_generate_chart_image_with_valid_data(self, agent):
-        """Test chart generation with valid DataFrame."""
+        """Test chart generation with valid DataFrame - returns None when mplfinance unavailable."""
         # Create valid OHLCV DataFrame
         dates = pd.date_range(start="2024-01-01", periods=100, freq="D")
         df = pd.DataFrame({
@@ -267,12 +267,11 @@ class TestJanusVisualAnalyst:
 
         context = {"chart_data": df}
 
-        with patch("mplfinance.plot"):
-            # Mock successful chart generation
-            # The function should attempt to generate the chart
-            await agent._generate_chart_image(context)
-            # If mplfinance is available, it should attempt to plot
-            # Otherwise returns None gracefully
+        # Test that the function handles execution gracefully
+        # When mplfinance is not installed, it should return None
+        result = await agent._generate_chart_image(context)
+        # Result should be None (mplfinance not available) or a base64 string (if available)
+        assert result is None or isinstance(result, str)
 
     @pytest.mark.asyncio
     async def test_generate_chart_image_with_empty_data(self, agent):
@@ -284,22 +283,19 @@ class TestJanusVisualAnalyst:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_generate_chart_image_without_mplfinance(self, agent):
-        """Test chart generation handles missing mplfinance gracefully."""
+    async def test_generate_chart_image_with_missing_columns(self, agent):
+        """Test chart generation returns None when required columns missing."""
         dates = pd.date_range(start="2024-01-01", periods=10, freq="D")
         df = pd.DataFrame({
             "Open": np.random.uniform(100, 110, 10),
-            "High": np.random.uniform(110, 120, 10),
-            "Low": np.random.uniform(90, 100, 10),
-            "Close": np.random.uniform(100, 110, 10),
+            # Missing High, Low, Close columns
         }, index=dates)
 
         context = {"chart_data": df}
 
-        # Simulate mplfinance not being installed
-        with patch.dict("sys.modules", {"mplfinance": None}):
-            # Should return None when mplfinance is not available
-            await agent._generate_chart_image(context)
+        result = await agent._generate_chart_image(context)
+        # Should return None due to missing required columns
+        assert result is None
 
 
 # =============================================================================

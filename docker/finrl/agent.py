@@ -85,14 +85,14 @@ class RLAgent:
             if self.agent_type not in algorithm_map:
                 raise ValueError(f"Unknown agent type: {self.agent_type}")
 
-            algorithm = algorithm_map[self.agent_type]
+            AlgorithmClass = algorithm_map[self.agent_type]
 
             if policy_path and Path(policy_path).exists():
                 logger.info(f"Loading model from {policy_path}")
-                self.model = algorithm.load(policy_path, env=self.env)
+                self.model = AlgorithmClass.load(policy_path, env=self.env)
             elif self.env is not None:
                 logger.info(f"Creating new {self.agent_type.upper()} model")
-                self.model = algorithm("MlpPolicy", self.env, verbose=1)
+                self.model = AlgorithmClass("MlpPolicy", self.env, verbose=1)
             else:
                 logger.warning("No environment available, model not initialized")
                 self.model = None

@@ -38,9 +38,12 @@ logger = get_logger(__name__)
 # =============================================================================
 # Execution Decision Constants
 # =============================================================================
+# Execution Decision Constants
+# =============================================================================
 # Thresholds for converting combined signals to discrete actions.
 # Values empirically tuned to balance trading frequency with signal quality.
-from .constants import ACTION_BUY_THRESHOLD, ACTION_SELL_THRESHOLD
+BUY_THRESHOLD = 0.3   # Combined signal above this triggers buy decision
+SELL_THRESHOLD = -0.3  # Combined signal below this triggers sell decision
 
 # Signal weighting for combined signal calculation.
 # Weights sum to 1.0 and represent relative importance of each signal source.
