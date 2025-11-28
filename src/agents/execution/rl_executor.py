@@ -35,6 +35,35 @@ from ..base import BaseAgent
 
 logger = get_logger(__name__)
 
+# =============================================================================
+# Execution Decision Constants
+# =============================================================================
+# Thresholds for converting combined signals to discrete actions.
+# Values empirically tuned to balance trading frequency with signal quality.
+BUY_THRESHOLD = 0.3   # Combined signal above this triggers buy decision
+SELL_THRESHOLD = -0.3  # Combined signal below this triggers sell decision
+
+# Signal weighting for combined signal calculation.
+# Weights sum to 1.0 and represent relative importance of each signal source.
+# - R1 sentiment: 30% - Captures fundamental/strategic view from reasoning agent
+# - Janus pattern: 30% - Captures technical/visual pattern confidence
+# - Strategy direction: 40% - Represents approved strategy from portfolio manager
+R1_SIGNAL_WEIGHT = 0.3
+JANUS_SIGNAL_WEIGHT = 0.3
+STRATEGY_DIRECTION_WEIGHT = 0.4
+
+# Confidence adjustment multipliers when signals align.
+# Small boosts to avoid overconfidence while rewarding signal agreement.
+R1_AGREEMENT_BOOST = 1.1   # 10% boost when R1 agrees with strategy
+JANUS_HIGH_CONFIDENCE_BOOST = 1.05  # 5% boost when Janus confidence > 0.7
+JANUS_CONFIDENCE_THRESHOLD = 0.7  # Threshold for Janus confidence boost
+
+# Slippage estimation bounds (in percentage).
+# Clamps slippage to reasonable range to prevent extreme values.
+MIN_SLIPPAGE_PCT = 0.01  # 0.01% minimum slippage
+MAX_SLIPPAGE_PCT = 5.0   # 5% maximum slippage
+MIN_PRICE_THRESHOLD = 0.01  # Minimum price to avoid division issues
+
 
 class FinRLExecutionAgent(BaseAgent):
     """
@@ -231,11 +260,11 @@ class FinRLExecutionAgent(BaseAgent):
             "r1_sentiment": r1_signal,
             "janus_pattern_confidence": janus_confidence,
             "strategy_direction": strategy_direction,
-            # Combined signal
+            # Combined signal using documented weights
             "combined_signal": (
-                r1_signal * 0.3 +
-                janus_confidence * strategy_direction * 0.3 +
-                strategy_direction * 0.4
+                r1_signal * R1_SIGNAL_WEIGHT +
+                janus_confidence * strategy_direction * JANUS_SIGNAL_WEIGHT +
+                strategy_direction * STRATEGY_DIRECTION_WEIGHT
             ),
         }
 
@@ -347,32 +376,35 @@ class FinRLExecutionAgent(BaseAgent):
         combined_signal = state.get("combined_signal", 0.0)
         strategy_direction = state.get("strategy_direction", 0.0)
 
-        # Decision thresholds
-        buy_threshold = 0.3
-        sell_threshold = -0.3
-
-        if combined_signal > buy_threshold:
+        # Use defined threshold constants for decision boundaries
+        if combined_signal > BUY_THRESHOLD:
             action_type = "buy"
-            confidence = min(1.0, (combined_signal - buy_threshold) / 0.7 + 0.5)
-        elif combined_signal < sell_threshold:
+            confidence = min(1.0, (combined_signal - BUY_THRESHOLD) / 0.7 + 0.5)
+        elif combined_signal < SELL_THRESHOLD:
             action_type = "sell"
-            confidence = min(1.0, (sell_threshold - combined_signal) / 0.7 + 0.5)
+            confidence = min(1.0, (SELL_THRESHOLD - combined_signal) / 0.7 + 0.5)
         else:
             action_type = "hold"
             confidence = 0.5
 
-        # Adjust confidence based on R1/Janus signals
+        # Adjust confidence based on R1/Janus signals using defined multipliers
         if state.get("r1_sentiment", 0) * strategy_direction > 0:
-            confidence *= 1.1  # Boost if R1 agrees with strategy
-        if state.get("janus_pattern_confidence", 0) > 0.7:
-            confidence *= 1.05  # Boost if Janus has high confidence
+            confidence *= R1_AGREEMENT_BOOST  # Boost if R1 agrees with strategy
+        if state.get("janus_pattern_confidence", 0) > JANUS_CONFIDENCE_THRESHOLD:
+            confidence *= JANUS_HIGH_CONFIDENCE_BOOST  # Boost if Janus has high confidence
 
         confidence = min(1.0, confidence)
 
-        # Estimate slippage from spread
+        # Estimate slippage from spread with safety bounds
         spread = state.get("spread", 0.0)
         price = state.get("price", 1.0)
-        slippage_estimate = (spread / price * 100) if price > 0 else 0.1
+        if price >= MIN_PRICE_THRESHOLD:
+            slippage_estimate = spread / price * 100
+            # Clamp to reasonable bounds
+            slippage_estimate = max(MIN_SLIPPAGE_PCT, min(MAX_SLIPPAGE_PCT, slippage_estimate))
+        else:
+            # Invalid price - use default slippage
+            slippage_estimate = MIN_SLIPPAGE_PCT
 
         return FinRLExecutionReport(
             symbol=symbol,

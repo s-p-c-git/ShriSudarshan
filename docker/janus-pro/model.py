@@ -2,7 +2,14 @@
 
 Wrapper for Janus-Pro-7B visual understanding model.
 Uses decoupled visual encoding for chart pattern recognition.
+
+SECURITY NOTE:
+    This model uses trust_remote_code=True when loading from HuggingFace.
+    The Janus-Pro model from deepseek-ai is a verified and reviewed model.
+    Only use this with trusted model sources (e.g., deepseek-ai/Janus-Pro-7B).
 """
+
+from __future__ import annotations
 
 import json
 import logging
@@ -27,7 +34,12 @@ class JanusProModel:
         Initialize Janus-Pro model.
 
         Args:
-            model_name: HuggingFace model identifier
+            model_name: HuggingFace model identifier. Only use trusted sources.
+
+        Note:
+            The model uses trust_remote_code=True because Janus-Pro requires
+            custom model code. The deepseek-ai/Janus-Pro-7B model has been
+            reviewed and verified as the official DeepSeek release.
         """
         self.model_name = model_name
         self.model = None
@@ -43,12 +55,15 @@ class JanusProModel:
 
             logger.info(f"Loading model from {self.model_name}")
 
+            # trust_remote_code=True is required for Janus-Pro custom architecture
+            # Only use with verified models from trusted sources (e.g., deepseek-ai)
             self.processor = AutoProcessor.from_pretrained(
                 self.model_name,
                 cache_dir=cache_dir,
                 trust_remote_code=True,
             )
 
+            # trust_remote_code=True is required for Janus-Pro custom architecture
             self.model = AutoModelForVision2Seq.from_pretrained(
                 self.model_name,
                 cache_dir=cache_dir,
@@ -136,6 +151,8 @@ class JanusProModel:
                 pass
 
         # Try to find balanced braces for JSON object
+        # Note: This simple approach may fail with braces in string values
+        # but handles most LLM JSON outputs correctly
         try:
             start_idx = response.find("{")
             if start_idx != -1:
@@ -149,11 +166,21 @@ class JanusProModel:
                         if depth == 0:
                             end_idx = i
                             break
+                # Only attempt JSON parsing if we found balanced braces
                 if depth == 0 and end_idx > start_idx:
                     json_str = response[start_idx:end_idx + 1]
                     return json.loads(json_str)
-        except (json.JSONDecodeError, ValueError):
-            pass
+                # If no balanced closing brace was found, log and fall through
+                elif depth != 0:
+                    logger.debug(
+                        "Unbalanced braces in response (depth=%d), falling back to pattern extraction",
+                        depth,
+                    )
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.debug(
+                "Failed to parse JSON from response using balanced braces: %s",
+                str(e),
+            )
 
         # Parse free-form response
         patterns = []

@@ -78,7 +78,7 @@ def create_llm(
             model=model_name,
             temperature=temperature,
             openai_api_key=settings.deepseek_api_key,
-            openai_api_base=settings.deepseek_base_url,
+            base_url=settings.deepseek_base_url,
         )
     else:
         raise ValueError(f"Unsupported LLM provider: {llm_provider}")
